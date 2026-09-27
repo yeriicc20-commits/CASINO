@@ -1,96 +1,158 @@
-# Prompt para la IA que trabaja en tu proyecto de Unity
+# Prompt para la IA que trabaja en mi ordenador
 
-Copia el bloque de abajo y pégaselo a la IA que tenga acceso a tu proyecto de
-Unity en local (Claude Code en tu ordenador, Cursor, Copilot…).
-
-Está escrito para que **no reinvente nada**: el port de la lógica ya está
-hecho y verificado en este repositorio, así que su trabajo es traerlo y
-construir la interfaz encima, no volver a calcular las matemáticas.
+Copia todo lo que hay debajo de la línea y pégaselo a la IA que tenga abierto
+tu proyecto de Unity (Claude Code instalado en tu PC, Cursor, etc.).
 
 ---
 
-## ⬇️ COPIA DESDE AQUÍ ⬇️
+Tengo un casino hecho como web (HTML/CSS/JS) y su lógica **ya portada a C# y
+verificada**. Quiero llevarlo a mi proyecto de Unity, que tienes abierto.
 
-Tengo un casino hecho como web (HTML/CSS/JS) en este repositorio público:
+## PASO 0 — Trae el código
 
-    https://github.com/yeriicc20-commits/CASINO
-    rama: claude/wonderful-maxwell-21ei7q
+Todo está en un repositorio público. Clónalo en una carpeta temporal:
 
-Quiero llevarlo a mi proyecto de Unity, que está sólo en mi ordenador.
-
-**Primer paso — trae lo que ya está portado.** En ese repo hay una carpeta
-`unity/Assets/Casino/` con TODA la lógica ya pasada a C# y verificada:
-
-- `Scripts/Core/Money.cs` — dinero en céntimos enteros y formato español
-- `Scripts/Core/Rng.cs` — generador Mulberry32 (mismo algoritmo que la web)
-- `Scripts/Core/Bank.cs` — el sistema de dinero con rondas atómicas
-- `Scripts/Games/Deck.cs` — baraja, zapato y evaluadores de manos
-- `Scripts/Games/*.cs` — **las 12 máquinas**, con sus tablas y su RTP
-- `Tests/` — 67 tests (147 aserciones) contra la versión web
-- Los tres `.asmdef` para que compile aislado
-
-Clónalo o descárgalo y **copia `unity/Assets/Casino/` dentro de mi
-`Assets/`**. No reescribas esos ficheros: ya están comprobados.
-
-**Segundo paso — ejecuta los tests antes de tocar nada.**
-`Window > General > Test Runner > EditMode > Run All`. Deben pasar los **67**
-tests (son 147 aserciones repartidas en 57 `[Test]` y 10 `[TestCase]`; el
-Test Runner cuenta tests, no aserciones).
-Comparan el C# contra números sacados del JavaScript original, así que si
-algo falla es que la copia ha ido mal. No sigas hasta que estén en verde.
-
-**Tercer paso — lee cómo funciona el dinero.** Está en `Bank.cs` y es lo
-más importante del proyecto. Ningún juego toca el saldo: todo pasa por una
-ronda.
-
-```csharp
-var round = bank.OpenRound("slots", 5m);   // cobra la apuesta YA
-round.Raise(5m);                           // doblar, separar, seguro…
-round.Settle(12.50m);                      // devuelve el TOTAL (0 = pierde)
+```bash
+git clone --branch claude/bold-hypatia-ebjafg \
+  https://github.com/yeriicc20-commits/CASINO.git casino-web
 ```
 
-Eso garantiza, por construcción: la apuesta se cobra una vez, `Settle()`
-sólo puede llamarse una vez, no puede haber dos rondas abiertas del mismo
-juego (un doble clic no cobra dos veces) y el saldo nunca queda negativo.
-**Respeta ese patrón en todo lo que añadas.** No sumes ni restes saldo a
-mano en ningún sitio.
+Esa rama es la que lo tiene **todo**. Si ya tengo el repo descargado en el
+escritorio, úsalo y sáltate el clone.
 
-**Cuarto paso — la interfaz, que es lo que falta.** La lógica de las doce
-máquinas YA está portada y testeada. No la reescribas ni «mejores» sus
-números: las tablas de pagos están resueltas y medidas, no puestas a ojo.
+Para ver cómo debe quedar: abre `index.html` de ese repo en el navegador. Es
+el juego real funcionando. Esa es la referencia visual, no te la imagines.
 
-Lo que tienes que construir es la capa visual encima, llamando a esas clases. El diseño visual está en `css/` del repo. Si
-mi proyecto usa **UI Toolkit**, el CSS se traduce a USS con bastante
-parecido (mismas propiedades de flexbox, colores y transiciones). Si usa
-**uGUI**, hay que rehacerlo con Canvas y componentes. Mírate cómo está
-montado mi proyecto y sigue la convención que ya tenga, no impongas otra.
+## PASO 1 — Trae la lógica (ya está hecha, NO la reescribas)
 
-Detalles de la tragaperras que quiero conservar:
-- Símbolos de fruta, **nunca cartas de baraja ni emoji** (en la web están
-  dibujados en `js/games/slot-symbols.js`; en Unity usa sprites o SVG)
-- Se acciona con una **palanca** que baja y vuelve, no con un botón
-- Cuatro botones: **Pagos, Rápido, Auto, Máx**
-- Apuesta mínima **5 €**, máxima **500 €**
-- La máquina **no debe ocupar toda la pantalla**: es un mueble estrecho
+Copia la carpeta `unity/Assets/Casino/` dentro del `Assets/` de mi proyecto.
 
-**Cómo quiero que trabajes:** ve juego por juego, y después de cada uno
-escribe tests como los de `CasinoGoldenTests.cs` que comprueben el RTP y los
-pagos. Enséñame cada máquina funcionando antes de pasar a la siguiente. Si
-algo del port no te cuadra con el original, **pregúntame en lugar de
-inventarte el número**.
+Contiene:
 
-## ⬆️ COPIA HASTA AQUÍ ⬆️
+- `Scripts/Core/Money.cs` — dinero en céntimos enteros, formato español
+- `Scripts/Core/Rng.cs` — generador Mulberry32, el mismo que la web
+- `Scripts/Core/Bank.cs` — el sistema de dinero
+- `Scripts/Games/Deck.cs` — baraja, zapato y evaluadores de manos
+- `Scripts/Games/*.cs` — **las 12 máquinas** con sus tablas de pagos
+- `Art/Symbols/*.png` — **los 10 símbolos ya dibujados**, 512×512 con alfa
+- `Tests/` — 67 tests (147 aserciones) contra la versión web
+- Los tres `.asmdef`
 
----
+**NO toques los ficheros de `Scripts/` ni de `Tests/`.** Las tablas de pagos
+están calculadas y medidas con millones de simulaciones. Si cambias un
+número, rompes el equilibrio del juego.
 
-## Si prefieres que lo siga haciendo yo
+## PASO 2 — Ejecuta los tests antes de nada
 
-También puedo seguir portando el resto aquí mismo, en este repositorio, y tú
-sólo copias la carpeta `unity/Assets/Casino/` cada vez. La pega es que **no
-veo tu proyecto**: no sé tu versión de Unity, ni si usas uGUI o UI Toolkit,
-ni qué hay ya montado. Con la lógica da igual (es C# puro y entra en
-cualquier proyecto), pero para la interfaz iría a ciegas.
+`Window > General > Test Runner > EditMode > Run All`
 
-Lo más práctico sería que subieras tu proyecto de Unity a un repositorio —
-aunque sea privado — y me des acceso. Entonces trabajo dentro de él y te
-dejo los cambios listos, igual que he hecho con la web.
+**Deben pasar 67 tests**, no 147. (147 es el número de aserciones; el Test
+Runner cuenta tests: 57 `[Test]` + 10 `[TestCase]` = 67.) Si falla alguno, la
+copia ha ido mal: no sigas.
+
+Si no aparece el Test Runner: `Window > Package Manager > Unity Registry >
+Test Framework`.
+
+Dos cosas ya comprobadas, para que no las investigues:
+
+- El port **compila limpio y pasa los 67** — se verificó fuera de Unity con
+  `dotnet test tools/verify-csharp/Casino.Verify.csproj`, que está en el
+  mismo repo y no necesita el editor.
+- `Bank.cs` llama a `UnityEngine.Debug.LogWarning` al topar el saldo. Dentro
+  de Unity compila sin más. (Fuera hace falta un sustituto, por eso el arnés
+  lleva uno; no es asunto tuyo.)
+
+## PASO 3 — La regla del dinero (lo más importante)
+
+Ningún juego toca el saldo directamente. Todo pasa por una ronda:
+
+```csharp
+var round = bank.OpenRound("slots", 5m);  // cobra la apuesta YA
+round.Raise(5m);                          // doblar, separar, seguro
+round.Settle(12.50m);                     // devuelve el TOTAL (0 = pierde)
+```
+
+Eso garantiza que la apuesta se cobra una vez, que `Settle()` sólo se puede
+llamar una vez, que no hay dos rondas abiertas del mismo juego (un doble clic
+no cobra dos veces) y que el saldo nunca queda negativo.
+
+**NUNCA sumes ni restes saldo a mano.** Si te ves escribiendo `balance +=
+algo`, lo estás haciendo mal.
+
+## PASO 4 — Los símbolos ya están dibujados
+
+En `Art/Symbols/`: cereza, limon, naranja, sandia, uvas, campana, siete, bar,
+comodin, estrella. Son PNG de 512×512 con transparencia, sacados de los
+mismos dibujos SVG de la web.
+
+Selecciona los diez y ponlos como **Sprite (2D and UI)**, Pivot `Center`,
+**Alpha Is Transparency** activado, Filter `Bilinear`, Compression `High
+Quality`.
+
+**No uses emoji ni cartas de baraja.** Ya se probó: el sistema operativo
+dibujaba el comodín como una carta y el siete como una tecla azul.
+
+## PASO 5 — Construye la interfaz (esto es tu trabajo)
+
+Es lo único que falta. **Mira primero cómo está montado mi proyecto** (uGUI o
+UI Toolkit, qué escenas hay, qué convenciones uso) y **sigue lo que ya
+tenga**. No impongas una estructura nueva.
+
+Colores (están en `css/base.css` del repo):
+
+| | |
+|---|---|
+| fondo | `#0b0d18` |
+| panel | `#171b2e` |
+| oro (acento) | `#f5c451` (claro `#ffe08f`, oscuro `#c3941f`) |
+| verde (ganar) | `#35d295` |
+| rojo (perder) | `#ff6b7e` |
+| tapete verde | `#0e4f3a` |
+| texto | `#f2f4ff` (secundario `#b9c0dd`, apagado `#7d86a8`) |
+
+Pantallas necesarias:
+
+- Vestíbulo con las 12 máquinas en tarjetas
+- Una pantalla por máquina
+- Saldo siempre visible arriba
+- Estadísticas y logros
+
+## La tragaperras (es la que más me importa)
+
+- Símbolos: los sprites de `Art/Symbols/`. Nunca cartas ni emoji.
+- Se acciona con una **PALANCA** que baja y vuelve con rebote, no con un
+  botón de girar. Debe poder arrastrarse hacia abajo.
+- Cuatro botones: **Pagos**, **Rápido**, **Auto**, **Máx**
+- Apuesta mínima 5 €, máxima 500 €
+- Tres marcadores: **Apuesta**, **Ganancia**, **Crédito**
+- La máquina **NO debe ocupar toda la pantalla**: es un mueble estrecho (en
+  la web está limitada a 660 px de ancho y centrada)
+- 5 carretes × 3 filas, 10 líneas de pago
+- El cartel de premio sólo aparece con premios grandes (**5× o más**): si
+  sale en cada tirada, tapa los símbolos que acaban de ganar
+
+## Cómo animar sin que dé tirones
+
+- El resultado se decide **antes** de animar. La animación sólo lo muestra.
+  Nunca decidas el resultado a mitad de la animación.
+- Bloquea la entrada mientras dura una jugada y libérala **siempre**, incluso
+  si algo falla (`try/finally`).
+- Los carretes: una sola animación por carrete, escalonados.
+
+## Cómo quiero que trabajes
+
+1. Primero la tragaperras completa y funcionando.
+2. Enséñamela antes de pasar a la siguiente máquina.
+3. Después el resto, una a una.
+4. Tras cada máquina, escribe tests como los de `Tests/` que comprueben que
+   el dinero cuadra.
+5. Si algo no te cuadra con el original, **pregúntame** en vez de inventarte
+   el número.
+
+## Lo que no debes hacer
+
+- No toques `Scripts/` ni `Tests/`
+- No cambies ni una cifra de las tablas de pagos
+- No modifiques el saldo directamente
+- No uses emoji ni cartas como símbolos
+- No hagas la tragaperras a pantalla completa
