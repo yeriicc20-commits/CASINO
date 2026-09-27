@@ -12,7 +12,7 @@ nada: son HTML, CSS y JavaScript sin dependencias.
 
 | Máquina | RTP | En qué consiste |
 |---|---|---|
-| 🎰 **Tragaperras Royale** | 96,3% | 5 carretes, 10 líneas, comodines, dispersos y giros gratis ×2 |
+| 🎰 **Tragaperras Royale** | 96,3% | 5 carretes, 10 líneas, palanca, comodines y giros gratis ×2 |
 | 🎡 **Ruleta Europea** | 97,3% | Un solo cero. Pleno, docenas, columnas y apuestas sencillas |
 | 🃏 **Blackjack** | 99,4% | 6 mazos, paga 3:2, doblar, separar hasta 4 manos y seguro |
 | 🂡 **Video Póker** | 99,5% | Jacks or Better tabla 9/6, hasta 4.000× con 5 créditos |
@@ -64,7 +64,9 @@ js/core/
   progress.js         Nivel, experiencia, logros, bonus diario
   engine.js           Registro de máquinas y ciclo de vida
   router.js           Navegación por hash
-js/games/             Las 12 máquinas + deck.js (baraja y evaluadores)
+js/games/             Las 12 máquinas
+  deck.js               Baraja francesa y evaluadores de manos
+  slot-symbols.js       Símbolos de la tragaperras, dibujados en SVG
 js/app.js             Arranque, vestíbulo, estadísticas, ajustes
 tools/                Pruebas y herramientas de cálculo
 ```
@@ -116,7 +118,7 @@ Salir de una máquina a mitad de ronda **devuelve la apuesta**.
 ## Pruebas
 
 ```bash
-node tools/test.js            # 174 comprobaciones, sin dependencias
+node tools/test.js            # 179 comprobaciones, sin dependencias
 node tools/stress.js          # 50.000 rondas agresivas contra el banco
 node tools/check-css.js       # revisa los estilos
 node tools/sim-slots.js       # RTP de las tragaperras (millones de giros)
@@ -139,12 +141,27 @@ máquinas —con subidas de apuesta, apuestas a todo el saldo y rachas de
 ruina— y comprueba el cuadre **después de cada ronda**, no sólo al final.
 
 **`tools/browser-test.js`** va más allá: juega una ronda completa en cada
-máquina en un Chromium de verdad, verifica que diez clics simultáneos
-producen **una sola** apuesta, que salir a mitad de ronda devuelve el
-dinero, y que ninguna pantalla se desborda en móvil, tableta ni
-escritorio.
+máquina en un Chromium de verdad, verifica que diez tirones de palanca
+seguidos producen **una sola** apuesta, que salir a mitad de ronda devuelve
+el dinero, y que ninguna pantalla se desborda en móvil, tableta ni
+escritorio. También vigila el aspecto de la tragaperras: que en los
+carretes no quede ni un carácter de texto (si aparece, es que se han
+colado emoji otra vez), que ningún símbolo sea una carta y que la máquina
+no se estire por toda la pantalla.
 
 ---
+
+## Detalles que quizá te preguntes
+
+**¿Por qué no hay fuentes ni imágenes externas?** La página no hace ni una
+sola petición de red. Antes cargaba una fuente de Google y, al abrir el
+fichero sin conexión, fallaba y llenaba la consola de errores.
+
+**¿Por qué los símbolos están dibujados y no son emoji?** Porque los emoji
+los pinta cada sistema operativo a su manera: 🃏 salía como una carta de la
+baraja y 7️⃣ como una tecla azul, cosas que no pintan nada en una máquina de
+frutas. Dibujados en SVG se ven igual en todas partes y son nítidos a
+cualquier tamaño.
 
 ## Aviso
 

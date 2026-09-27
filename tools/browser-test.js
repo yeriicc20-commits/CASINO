@@ -30,7 +30,7 @@ const APP = 'file://' + path.join(__dirname, '..', 'index.html');
    que la ronda quede liquidada (plantarse, cambiar cartas, cobrar…). Las
    máquinas sin `finish` se resuelven solas con un clic. */
 const GAMES = [
-  { id: 'slots',      play: 'Girar',          wait: 3200 },
+  { id: 'slots',      play: 'lever',          wait: 3200, lever: true },
   { id: 'roulette',   play: 'Girar',          wait: 6000, setup: 'roulette' },
   { id: 'blackjack',  play: 'Repartir',       wait: 2600, finish: 'Plantarse' },
   { id: 'videopoker', play: 'Repartir',       wait: 1800, finish: 'Cambiar' },
@@ -112,6 +112,7 @@ function ok(cond, label, detail) {
     /* Fijamos una apuesta conocida. */
     await page.evaluate(() => {
       const inp = document.querySelector('.bet__input');
+      /* 5 € es la apuesta mínima de la tragaperras y válida en el resto. */
       if (inp) { inp.value = '5'; inp.dispatchEvent(new Event('change', { bubbles: true })); }
     });
     await page.waitForTimeout(120);
@@ -130,17 +131,23 @@ function ok(cond, label, detail) {
 
     const balBefore = await page.evaluate(() => window.Casino.bank.balance);
 
-    /* Pulsamos el botón de jugar. */
-    const clicked = await page.evaluate(label => {
+    /* Pulsamos el botón de jugar (o tiramos de la palanca). */
+    const clicked = await page.evaluate(cfg => {
+      if (cfg.lever) {
+        const lv = document.querySelector('.lever');
+        if (!lv) return false;
+        lv.click();
+        return true;
+      }
       const btns = [...document.querySelectorAll('.controls .btn')];
       const b = btns.find(x => {
         const l = x.querySelector('.btn__label');
-        return l && l.textContent.trim() === label && x.offsetParent !== null && !x.disabled;
+        return l && l.textContent.trim() === cfg.play && x.offsetParent !== null && !x.disabled;
       });
       if (!b) return false;
       b.click();
       return true;
-    }, g.play);
+    }, { lever: !!g.lever, play: g.play });
 
     await page.waitForTimeout(g.wait);
 
@@ -152,7 +159,7 @@ function ok(cond, label, detail) {
 
     ok(clicked, g.id.padEnd(11) + ' se pulsa "' + g.play + '" y se cobra la apuesta  (' +
        balBefore.toFixed(2) + ' € → ' + after.balance.toFixed(2) + ' €)',
-       !clicked ? 'no se encontró el botón "' + g.play + '"' : undefined);
+       !clicked ? (g.lever ? 'no se encontró la palanca' : 'no se encontró el botón "' + g.play + '"') : undefined);
 
     /* Algunos juegos necesitan descubrir una casilla antes de poder cobrar. */
     if (g.pick) {
@@ -204,10 +211,9 @@ function ok(cond, label, detail) {
     const r = await page.evaluate(async () => {
       const before = window.Casino.bank.balance;
       const roundsBefore = window.Casino.store.state.totals.rounds;
-      const btn = [...document.querySelectorAll('.controls .btn')]
-        .find(x => { const l = x.querySelector('.btn__label'); return l && l.textContent.trim() === 'Girar'; });
-      /* Diez clics seguidos en el mismo instante. */
-      for (let i = 0; i < 10; i++) btn.click();
+      const lever = document.querySelector('.lever');
+      /* Diez tirones de palanca en el mismo instante. */
+      for (let i = 0; i < 10; i++) lever.click();
       return { before, roundsBefore };
     });
     await page.waitForTimeout(4200);
@@ -218,7 +224,8 @@ function ok(cond, label, detail) {
       audit: window.Casino.bank.audit(100000)
     }), r.roundsBefore);
 
-    ok(outcome.rounds === 1, '10 clics simultáneos producen UNA sola ronda', outcome.rounds + ' rondas');
+    ok(outcome.rounds === 1, '10 tirones de palanca seguidos producen UNA sola ronda',
+       outcome.rounds + ' rondas');
   }
 
   /* -------- 4. salir a mitad de ronda devuelve la apuesta -------- */
@@ -276,8 +283,57 @@ function ok(cond, label, detail) {
     ok(Number.isInteger(audit.balanceCents), 'el saldo son céntimos enteros (sin deriva decimal)');
   }
 
-  /* ----------------------- 6. diseño adaptable ----------------------- */
-  console.log('\n\x1b[1m6. Diseño adaptable\x1b[0m');
+  /* ------------- 6. la tragaperras: frutas, palanca y botones ------------- */
+  console.log('\n\x1b[1m6. Tragaperras — aspecto de la máquina\x1b[0m');
+  {
+    await page.evaluate(() => { window.location.hash = '#/juego/slots'; });
+    await page.waitForTimeout(600);
+    const m = await page.evaluate(() => {
+      const reels = document.querySelector('.reels');
+      const cab = document.querySelector('.cabinet');
+      return {
+        /* Texto dentro de los carretes: si hay algo, es que quedan emoji. */
+        texto: reels ? reels.textContent.replace(/\s/g, '') : 'SIN-CARRETES',
+        usos: [...document.querySelectorAll('.cell use')].length,
+        simbolos: [...new Set([...document.querySelectorAll('.cell use')]
+                    .map(u => u.getAttribute('href')))].sort(),
+        palanca: !!document.querySelector('.lever'),
+        bola: !!document.querySelector('.lever__knob'),
+        botones: [...document.querySelectorAll('.machine-btns .btn .btn__label')]
+                   .map(x => x.textContent.trim()),
+        anchoMueble: cab ? Math.round(cab.getBoundingClientRect().width) : 0,
+        anchoPantalla: document.documentElement.clientWidth,
+        min: window.Casino.engine.get('slots').minBet,
+        max: window.Casino.engine.get('slots').maxBet,
+        fichas: [...document.querySelectorAll('.chip__face')].map(c => c.textContent)
+      };
+    });
+
+    ok(m.texto === '', 'los carretes no llevan ni un carácter de texto (todo dibujado)', '"' + m.texto + '"');
+    ok(m.usos === 15, 'las 15 celdas muestran un símbolo dibujado', m.usos);
+    ok(m.simbolos.every(h => /^#sym-[a-z]+$/.test(h)),
+       'todos los símbolos vienen del juego de dibujos', m.simbolos.join(' '));
+    ok(!m.simbolos.some(h => /joker|carta|card/.test(h)), 'ningún símbolo es una carta de la baraja');
+    ok(m.palanca && m.bola, 'la palanca está montada, con su bola');
+    ok(m.botones.length === 4 && m.botones.join(',') === 'Pagos,Rápido,Auto,Máx',
+       'están los cuatro botones: Pagos · Rápido · Auto · Máx', m.botones.join(','));
+    ok(m.min === 5, 'la apuesta mínima es 5 €', m.min);
+    ok(m.max === 500, 'la apuesta máxima sigue en 500 €', m.max);
+    ok(!m.fichas.some(f => parseFloat(String(f).replace(',', '.')) < 5),
+       'no se ofrecen fichas por debajo del mínimo', m.fichas.join(', '));
+    ok(m.anchoMueble <= 700 && m.anchoMueble < m.anchoPantalla * 0.75,
+       'la máquina no ocupa toda la pantalla (' + m.anchoMueble + 'px de ' + m.anchoPantalla + 'px)');
+
+    /* La palanca debe girar de verdad. */
+    const antes = await page.evaluate(() => window.Casino.store.state.totals.rounds);
+    await page.locator('.lever').click();
+    await page.waitForTimeout(4200);
+    const despues = await page.evaluate(() => window.Casino.store.state.totals.rounds);
+    ok(despues === antes + 1, 'tirar de la palanca juega exactamente una ronda', despues - antes);
+  }
+
+  /* ----------------------- 7. diseño adaptable ----------------------- */
+  console.log('\n\x1b[1m7. Diseño adaptable\x1b[0m');
   for (const [w, h, name] of [[390, 844, 'móvil'], [820, 1180, 'tableta'], [1440, 900, 'escritorio']]) {
     await page.setViewportSize({ width: w, height: h });
     await page.evaluate(() => { window.location.hash = '#/juego/slots'; });

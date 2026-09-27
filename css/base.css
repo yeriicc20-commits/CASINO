@@ -72,10 +72,16 @@
   --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
   --s-5: 22px; --s-6: 30px; --s-7: 40px; --s-8: 56px;
 
-  /* --- tipografía --- */
-  --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-display: "Bricolage Grotesque", "Inter", system-ui, sans-serif;
-  --font-num: "DM Mono", "SF Mono", "Cascadia Mono", ui-monospace, monospace;
+  /* --- tipografía ---
+     Sólo fuentes del sistema: la página no descarga nada, así que funciona
+     igual sin conexión y no ensucia la consola con peticiones fallidas.
+     El orden cubre Windows, macOS, Linux y Android. */
+  --font: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont,
+          "Inter", "Roboto", "Helvetica Neue", system-ui, sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", -apple-system,
+                  BlinkMacSystemFont, "Inter", "Roboto", system-ui, sans-serif;
+  --font-num: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono",
+              "Roboto Mono", Menlo, Consolas, monospace;
 
   /* --- movimiento --- */
   --t-fast: 120ms;

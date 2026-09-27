@@ -15,21 +15,34 @@
   /* --------------------------------- símbolos --------------------------------- */
   /* `w` es el peso en el carrete (mayor = más frecuente).
      `pay` es el multiplicador por 3, 4 y 5 iguales, sobre la apuesta por línea. */
+  /*
+    Símbolos clásicos de máquina de frutas. Se dibujan en SVG
+    (js/games/slot-symbols.js), NO con emoji: los emoji los pinta el sistema
+    y 🃏 salía como una carta de la baraja y 7️⃣ como una tecla azul.
+
+    Las columnas `n` (veces que aparece en cada tira de 64) y `pay`
+    (multiplicador por 3, 4 y 5 iguales) son EXACTAMENTE las de antes, así
+    que el RTP sigue siendo el 96,3% ya verificado. Sólo cambia el dibujo.
+  */
   var SYMBOLS = [
-    { id: 'cherry',  glyph: '🍒', name: 'Cereza',   n: 11, pay: [0, 0, 4, 12, 40] },
-    { id: 'lemon',   glyph: '🍋', name: 'Limón',    n: 11, pay: [0, 0, 5, 16, 50] },
-    { id: 'grape',   glyph: '🍇', name: 'Uva',      n: 11, pay: [0, 0, 8, 20, 70] },
-    { id: 'melon',   glyph: '🍉', name: 'Sandía',   n: 9,  pay: [0, 0, 10, 30, 100] },
-    { id: 'bell',    glyph: '🔔', name: 'Campana',  n: 7,  pay: [0, 0, 15, 50, 160] },
-    { id: 'diamond', glyph: '💎', name: 'Diamante', n: 5,  pay: [0, 0, 25, 80, 250] },
-    { id: 'seven',   glyph: '7️⃣', name: 'Siete',    n: 3,  pay: [0, 0, 40, 150, 500] },
-    { id: 'crown',   glyph: '👑', name: 'Corona',   n: 1,  pay: [0, 0, 100, 400, 2000] },
-    { id: 'wild',    glyph: '🃏', name: 'Comodín',  n: 4,  pay: [0, 0, 0, 0, 0], wild: true },
-    { id: 'scatter', glyph: '⭐', name: 'Disperso', n: 2,  pay: [0, 0, 0, 0, 0], scatter: true }
+    { id: 'cereza',   name: 'Cereza',   n: 11, pay: [0, 0, 4, 12, 40] },
+    { id: 'limon',    name: 'Limón',    n: 11, pay: [0, 0, 5, 16, 50] },
+    { id: 'naranja',  name: 'Naranja',  n: 11, pay: [0, 0, 8, 20, 70] },
+    { id: 'sandia',   name: 'Sandía',   n: 9,  pay: [0, 0, 10, 30, 100] },
+    { id: 'uvas',     name: 'Uvas',     n: 7,  pay: [0, 0, 15, 50, 160] },
+    { id: 'campana',  name: 'Campana',  n: 5,  pay: [0, 0, 25, 80, 250] },
+    { id: 'siete',    name: 'Siete',    n: 3,  pay: [0, 0, 40, 150, 500] },
+    { id: 'bar',      name: 'BAR',      n: 1,  pay: [0, 0, 100, 400, 2000] },
+    { id: 'comodin',  name: 'Comodín',  n: 4,  pay: [0, 0, 0, 0, 0], wild: true },
+    { id: 'estrella', name: 'Estrella', n: 2,  pay: [0, 0, 0, 0, 0], scatter: true }
   ];
 
   var BY_ID = {};
   SYMBOLS.forEach(function (s) { BY_ID[s.id] = s; });
+
+  /* Ids de los símbolos especiales, en un solo sitio. */
+  var WILD = 'comodin';
+  var SCATTER = 'estrella';
 
   /* Dispersos: pagan en cualquier posición, sobre la apuesta TOTAL. */
   var SCATTER_PAY = { 3: 2, 4: 8, 5: 40 };
@@ -105,7 +118,7 @@
     rng.shuffle(rest);
     var k = 0;
     for (var i = 0; i < STRIP_LEN; i++) {
-      if (strip[i] === undefined) strip[i] = rest[k++] || 'lemon';
+      if (strip[i] === undefined) strip[i] = rest[k++] || 'limon';
     }
     return strip;
   }
@@ -128,23 +141,24 @@
       // comodines, cuenta como la corona (el mejor pago).
       var baseId = null;
       for (var k = 0; k < ids.length; k++) {
-        if (ids[k] !== 'wild' && ids[k] !== 'scatter') { baseId = ids[k]; break; }
-        if (ids[k] === 'scatter') break; // un disperso corta la línea
+        if (ids[k] !== WILD && ids[k] !== SCATTER) { baseId = ids[k]; break; }
+        if (ids[k] === SCATTER) break; // un disperso corta la línea
       }
       if (baseId === null) {
-        if (ids[0] === 'wild') baseId = 'crown';
+        if (ids[0] === WILD) baseId = 'bar';
         else continue;
       }
 
       // Contamos coincidencias desde la izquierda (comodín sustituye).
       var count = 0;
       for (var c = 0; c < REELS; c++) {
-        if (ids[c] === baseId || ids[c] === 'wild') count++;
+        if (ids[c] === baseId || ids[c] === WILD) count++;
         else break;
       }
 
       if (count >= 3) {
         var sym = BY_ID[baseId];
+        if (!sym) continue;            // id desconocido: la línea no paga
         var mult = sym.pay[count - 1] || 0;
         if (mult > 0) {
           var cells = [];
@@ -158,7 +172,7 @@
     var scatterCells = [];
     for (var rr = 0; rr < REELS; rr++) {
       for (var ff = 0; ff < ROWS; ff++) {
-        if (grid[rr][ff] === 'scatter') scatterCells.push([rr, ff]);
+        if (grid[rr][ff] === SCATTER) scatterCells.push([rr, ff]);
       }
     }
     var scatter = null;
@@ -198,7 +212,7 @@
     accent: '#f5c451',
     tagline: '5 carretes · 10 líneas · giros gratis',
     desc: 'La clásica. Comodines que sustituyen, dispersos que regalan tiradas y una corona que paga 2.000×.',
-    minBet: 0.5,
+    minBet: 5,
     maxBet: 500,
     rtp: 96.3,
 
@@ -235,7 +249,7 @@
       });
 
       var jackpotSign = el('.slots__sign', {}, [
-        el('span.slots__signlabel', { text: 'Corona × 5 paga' }),
+        el('span.slots__signlabel', { text: 'BAR × 5 paga' }),
         el('span.slots__signvalue.shimmer', { text: '2.000×' })
       ]);
 
@@ -247,10 +261,39 @@
       verdict.appendChild(verdictLabel);
       verdict.appendChild(verdictAmount);
 
+      /* Pantalla de la máquina: apuesta, última ganancia y crédito. */
+      function meter(label, id, cls) {
+        var v = el('span.meter__value' + (cls ? '.' + cls : ''), { id: id, text: '—' });
+        return { node: el('.meter', {}, [el('span.meter__label', { text: label }), v]), val: v };
+      }
+      var meterBet = meter('Apuesta', 'mBet');
+      var meterWin = meter('Ganancia', 'mWin', 'is-win');
+      var meterCredit = meter('Crédito', 'mCredit');
+
+      /* La palanca: se puede pulsar o arrastrar hacia abajo. */
+      var leverKnob = el('.lever__knob');
+      var leverStick = el('.lever__stick');
+      var lever = el('.lever', {
+        role: 'button', tabindex: '0',
+        title: 'Tira de la palanca para girar (o pulsa espacio)',
+        'aria-label': 'Palanca: tira para girar'
+      }, [
+        el('.lever__slot'),
+        // La bola primero: es la de arriba del brazo.
+        el('.lever__arm', {}, [leverKnob, leverStick]),
+        el('.lever__base')
+      ]);
+
       ctx.stage.appendChild(el('.slots', {}, [
-        jackpotSign,
-        freeBanner,
-        el('.reels__frame', {}, [reelsWrap, lineOverlay]),
+        el('.cabinet', {}, [
+          jackpotSign,
+          freeBanner,
+          el('.cabinet__body', {}, [
+            el('.reels__frame', {}, [reelsWrap, lineOverlay]),
+            lever
+          ]),
+          el('.meters', {}, [meterBet.node, meterWin.node, meterCredit.node])
+        ]),
         verdict
       ]));
 
@@ -272,9 +315,11 @@
 
       function symbolCell(id) {
         var s = BY_ID[id];
-        return el('.cell' + (s.wild ? '.cell--wild' : '') + (s.scatter ? '.cell--scatter' : ''), {
+        var cell = el('.cell' + (s.wild ? '.cell--wild' : '') + (s.scatter ? '.cell--scatter' : ''), {
           'data-sym': id, title: s.name
-        }, [el('span.cell__glyph', { text: s.glyph })]);
+        });
+        cell.appendChild(C.slotSymbols.node(id, 'cell__glyph'));
+        return cell;
       }
 
       /** Pantalla aleatoria de arranque (sin premio visible). */
@@ -399,24 +444,125 @@
 
       /* ---------- controles ---------- */
 
-      var spinBtn = ctx.button({
-        label: 'Girar', icon: '🎰', variant: 'play',
-        onClick: function () { doSpin(); }
+      /* ---------------------- botones de la máquina ----------------------
+         Los cuatro clásicos, en una fila propia debajo de la apuesta:
+           PAGOS   abre la tabla de premios
+           RÁPIDO  acorta las animaciones (turbo)
+           AUTO    lanza una tanda de giros seguidos
+           MÁX     sube la apuesta al máximo que permita el saldo
+         --------------------------------------------------------------- */
+
+      var paysBtn = ctx.button({
+        label: 'Pagos', icon: '📋', variant: 'ghost',
+        title: 'Ver la tabla de premios',
+        onClick: function () { showPaytable(); }
+      });
+
+      var fastBtn = ctx.button({
+        label: 'Rápido', icon: '⚡', variant: 'ghost',
+        title: 'Acorta las animaciones',
+        onClick: function () { toggleFast(); }
       });
 
       var autoBtn = ctx.button({
-        label: 'Auto', sub: '10 giros', icon: '🔁', variant: 'ghost', size: 'lg',
+        label: 'Auto', sub: '10 giros', icon: '🔁', variant: 'ghost',
         title: 'Lanza 10 giros seguidos',
-        onClick: function () { startAuto(10); }
+        onClick: function () { toggleAuto(); }
       });
 
-      var autoRunning = false;
-      var autoLeft = 0;
+      var maxBtn = ctx.button({
+        label: 'Máx', icon: '⬆️', variant: 'ghost',
+        title: 'Apuesta lo máximo que permita tu saldo',
+        onClick: function () {
+          var before = ctx.bet.get();
+          ctx.bet.set(ctx.bet.max());
+          C.audio.play(ctx.bet.get() === before ? 'deny' : 'chip');
+          refreshMeters();
+        }
+      });
+
+      var machineBtns = el('.machine-btns', {}, [paysBtn, fastBtn, autoBtn, maxBtn]);
+
+      function toggleFast() {
+        var on = !C.store.state.settings.fastMode;
+        C.store.state.settings.fastMode = on;
+        C.store.save();
+        fastBtn.classList.toggle('is-on', on);
+        C.ui.toast(on ? 'Modo rápido activado' : 'Modo rápido desactivado',
+                   { type: 'info', icon: on ? '⚡' : '🐢', ms: 1500 });
+      }
+
+      function showPaytable() {
+        var body = el('div', {}, [
+          el('p', { text: 'Los pagos son por línea, sobre la apuesta de cada línea ' +
+                          '(apuesta total ÷ ' + LINES_N + '). Se paga de izquierda a derecha.',
+                    style: { fontSize: '13px', color: 'var(--ink-2)', marginBottom: 'var(--s-3)' } }),
+          buildPaytable(),
+          el('p', { text: 'Comodín (WILD) sustituye a cualquier símbolo menos a la estrella. ' +
+                          'Tres estrellas o más dan giros gratis que pagan ×' + FREE_MULTIPLIER + '.',
+                    style: { fontSize: '12.5px', color: 'var(--ink-3)', marginTop: 'var(--s-3)' } })
+        ]);
+        ctx.modal({ title: 'Tabla de premios', icon: '📋', wide: true, body: body,
+                    actions: [{ label: 'Cerrar', value: true, primary: true }] });
+      }
+
+      /* --------------------------- la palanca --------------------------- */
+
+      function pullLever() {
+        if (ctx.busy) return;
+        lever.classList.add('is-pulled');
+        C.audio.play('reelStop');
+        root.setTimeout(function () { lever.classList.remove('is-pulled'); }, 460);
+        doSpin();
+      }
+
+      C.ui.attachTactile(lever, pullLever, 'click');
+      lever.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pullLever(); }
+      });
+
+      /* Arrastrar hacia abajo también gira, como en una máquina de verdad. */
+      var dragStartY = null;
+      lever.addEventListener('pointerdown', function (e) {
+        if (ctx.busy) return;
+        dragStartY = e.clientY;
+        lever.setPointerCapture && lever.setPointerCapture(e.pointerId);
+      });
+      lever.addEventListener('pointermove', function (e) {
+        if (dragStartY === null) return;
+        var dy = U.clamp(e.clientY - dragStartY, 0, 90);
+        lever.style.setProperty('--pull', (dy / 90).toFixed(3));
+      });
+      function endDrag() {
+        if (dragStartY === null) return;
+        var pulled = parseFloat(lever.style.getPropertyValue('--pull') || '0');
+        dragStartY = null;
+        lever.style.removeProperty('--pull');
+        if (pulled > 0.45) pullLever();
+      }
+      lever.addEventListener('pointerup', endDrag);
+      lever.addEventListener('pointercancel', endDrag);
+      lever.addEventListener('pointerleave', endDrag);
+
+      /* --------------------------- marcadores --------------------------- */
+
+      function refreshMeters() {
+        meterBet.val.textContent = U.money(ctx.bet.get());
+        meterCredit.val.textContent = U.money(C.bank.balance, { compact: true });
+      }
+      var offBank = C.bank.on('change', refreshMeters);
 
       ctx.controls.appendChild(ctx.bet.node);
-      ctx.controls.appendChild(el('.controls__spacer'));
-      ctx.controls.appendChild(el('.controls__group', {}, [autoBtn, spinBtn]));
-      ctx.lockDuringPlay(spinBtn, autoBtn);
+      ctx.controls.appendChild(machineBtns);
+      ctx.lockDuringPlay(paysBtn, autoBtn, maxBtn);
+
+      fastBtn.classList.toggle('is-on', !!C.store.state.settings.fastMode);
+      refreshMeters();
+      meterWin.val.textContent = U.money(0);
+
+      /* La apuesta cambia con las fichas: el marcador la sigue. */
+      ctx.bet.node.addEventListener('click', function () { root.setTimeout(refreshMeters, 0); });
+      ctx.bet.node.addEventListener('change', function () { root.setTimeout(refreshMeters, 0); });
 
       /* panel lateral: última jugada */
       var sideWins = el('.panel', {}, [
@@ -469,6 +615,9 @@
         }
 
         sess.spins++;
+        meterBet.val.textContent = U.money(totalBet);
+        meterWin.val.textContent = U.money(0);
+        meterWin.val.classList.remove('is-win');
         ctx.play('spin');
 
         /* resultado decidido ANTES de animar: la animación sólo lo muestra */
@@ -515,6 +664,8 @@
           if (win > sess.best) sess.best = win;
         }
         refreshStats();
+        meterWin.val.textContent = U.money(win);
+        meterWin.val.classList.toggle('is-win', win > 0);
 
         /* --- resaltado de combinaciones --- */
         renderWinList(result, totalBet, mult);
@@ -541,19 +692,26 @@
           var ratio = totalBet > 0 ? win / totalBet : 0;
 
           if (win > 0) {
-            var kind = ratio >= 50 ? 'jackpot' : 'win';
-            var label = ratio >= 50 ? '¡PREMIO GORDO!'
-                      : ratio >= 10 ? '¡GRAN PREMIO!'
-                      : isFree ? 'Giro gratis ×' + mult : 'Premio';
-            showVerdict(kind, label, U.money(win));
+            /*
+              El cartel sólo sale con premios gordos. Antes aparecía en
+              CADA giro premiado y tapaba justo los símbolos que acababan
+              de ganar. Los premios normales se ven en el marcador de
+              GANANCIA y en el número que sube desde los carretes.
+            */
+            if (ratio >= 5) {
+              var kind = ratio >= 50 ? 'jackpot' : 'win';
+              var label = ratio >= 50 ? '¡PREMIO GORDO!'
+                        : ratio >= 10 ? '¡GRAN PREMIO!'
+                        : isFree ? 'Giro gratis ×' + mult : 'Buen premio';
+              showVerdict(kind, label, U.money(win));
+            }
             ctx.fx.celebrate(ratio, ctx.stage);
             if (ratio >= 50) {
               C.progress.unlock('jackpot');
               ctx.fx.coinRain(2200);
             }
-          } else {
-            showVerdict('lose', isFree ? 'Giro gratis' : 'Sin premio', U.money(0));
-            if (!isFree) ctx.play('lose');
+          } else if (!isFree) {
+            ctx.play('lose');
           }
 
           /* --- ¿se activan giros gratis? --- */
@@ -612,7 +770,9 @@
         if (freeSpins > 0) {
           freeBanner.hidden = false;
           U.clear(freeBanner);
-          freeBanner.appendChild(el('span.slots__freeicon', { text: '⭐' }));
+          var fi = el('span.slots__freeicon');
+          fi.appendChild(C.slotSymbols.node(SCATTER));
+          freeBanner.appendChild(fi);
           freeBanner.appendChild(el('span', {}, [
             el('strong', { text: freeSpins + ' giros gratis' }),
             el('span', { text: '  ×' + FREE_MULTIPLIER + '  ·  ganado ' + U.money(freeWon) })
@@ -632,14 +792,19 @@
         var perLine = totalBet / LINES_N;
         result.lines.forEach(function (w) {
           var amount = w.pay * perLine * mult;
+          var key = el('span.panel__key');
+          key.appendChild(C.slotSymbols.node(w.symbol, 'panel__sym'));
+          key.appendChild(el('span', { text: ' ×' + w.count + '  L' + (w.line + 1) }));
           winList.appendChild(el('.panel__row', {}, [
-            el('span.panel__key', { text: BY_ID[w.symbol].glyph + ' ×' + w.count + '  L' + (w.line + 1) }),
-            el('span.panel__val.text-win', { text: '+' + U.money(amount) })
+            key, el('span.panel__val.text-win', { text: '+' + U.money(amount) })
           ]));
         });
         if (result.scatter) {
+          var skey = el('span.panel__key');
+          skey.appendChild(C.slotSymbols.node(SCATTER, 'panel__sym'));
+          skey.appendChild(el('span', { text: ' ×' + result.scatter.count + '  dispersas' }));
           winList.appendChild(el('.panel__row', {}, [
-            el('span.panel__key', { text: '⭐ ×' + result.scatter.count + '  dispersos' }),
+            skey,
             el('span.panel__val.text-gold', { text: '+' + U.money(result.scatter.pay * totalBet * mult) })
           ]));
         }
@@ -647,12 +812,14 @@
 
       /* ---------- giros automáticos ---------- */
 
-      function startAuto(n) {
-        if (autoRunning) { autoRunning = false; return; }
+      var autoRunning = false;
+      var autoLeft = 0;
+
+      function toggleAuto() {
+        if (autoRunning) { stopAuto(); return; }
         autoRunning = true;
-        autoLeft = n;
-        C.ui.setBusy(autoBtn, false);
-        autoBtn.querySelector('.btn__label').textContent = 'Parar';
+        autoLeft = 10;
+        autoBtn.classList.add('is-on');
         next();
 
         function next() {
@@ -661,7 +828,8 @@
             return;
           }
           autoLeft--;
-          autoBtn.querySelector('.btn__sub').textContent = autoLeft + ' restantes';
+          var sub = autoBtn.querySelector('.btn__sub');
+          if (sub) sub.textContent = autoLeft + ' restantes';
           doSpin().then(function () {
             if (!autoRunning) return;
             root.setTimeout(next, ctx.dur(420));
@@ -671,35 +839,52 @@
 
       function stopAuto() {
         autoRunning = false;
-        var l = autoBtn.querySelector('.btn__label');
-        var s = autoBtn.querySelector('.btn__sub');
-        if (l) l.textContent = 'Auto';
-        if (s) s.textContent = '10 giros';
+        autoBtn.classList.remove('is-on');
+        var sub = autoBtn.querySelector('.btn__sub');
+        if (sub) sub.textContent = '10 giros';
       }
 
       /* ---------- teclado ---------- */
       function onKey(e) {
         if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
-        if (e.code === 'Space') { e.preventDefault(); doSpin(); }
+        if (e.code === 'Space') { e.preventDefault(); pullLever(); }
       }
       document.addEventListener('keydown', onKey);
 
       /* ---------- panel de información ---------- */
-      var payRows = SYMBOLS.filter(function (s) { return !s.wild && !s.scatter; })
-        .sort(function (a, b) { return b.pay[4] - a.pay[4]; })
-        .map(function (s) {
-          return { cells: [s.glyph + '  ' + s.name, s.pay[2] + '×', s.pay[3] + '×', s.pay[4] + '×'] };
+      function payRowsData() {
+        return SYMBOLS.filter(function (s) { return !s.wild && !s.scatter; })
+          .sort(function (a, b) { return b.pay[4] - a.pay[4]; })
+          .map(function (s) {
+            var name = el('span.ptable__sym');
+            name.appendChild(C.slotSymbols.node(s.id));
+            name.appendChild(el('span', { text: s.name }));
+            return { cells: [{ html: '' }, s.pay[2] + '×', s.pay[3] + '×', s.pay[4] + '×'], _node: name };
+          });
+      }
+
+      /** Construye la tabla de pagos con los iconos ya dibujados. */
+      function buildPaytable() {
+        var rows = payRowsData();
+        var table = ctx.table(['Símbolo', '3', '4', '5'], rows, { compact: true });
+        // Metemos el icono en la primera celda de cada fila.
+        var trs = U.qsa('tbody tr', table);
+        trs.forEach(function (tr, i) {
+          var td = tr.children[0];
+          if (td && rows[i]._node) { U.clear(td); td.appendChild(rows[i]._node); }
         });
+        return table;
+      }
 
       ctx.setInfo(el('div', {}, [
         el('p', { text: 'Apuesta repartida entre 10 líneas. Los pagos de la tabla son por línea, ' +
                         'sobre la apuesta de cada línea (apuesta total ÷ 10). Se paga de izquierda a derecha.',
                   style: { fontSize: '12.5px', color: 'var(--ink-2)', marginBottom: 'var(--s-3)' } }),
-        ctx.table(['Símbolo', '3 iguales', '4 iguales', '5 iguales'], payRows, { compact: true }),
-        el('p', { text: '🃏 Comodín: sustituye a cualquier símbolo menos al disperso.',
+        buildPaytable(),
+        el('p', { text: 'Comodín (WILD): sustituye a cualquier símbolo menos a la estrella.',
                   style: { fontSize: '12.5px', color: 'var(--ink-2)', marginTop: 'var(--s-3)' } }),
-        el('p', { text: '⭐ Disperso: paga en cualquier posición sobre la apuesta total — ' +
-                        '3 dispersos = 2× y 8 giros gratis, 4 = 10× y 12 giros, 5 = 50× y 20 giros. ' +
+        el('p', { text: 'Estrella: paga en cualquier posición sobre la apuesta total — ' +
+                        '3 estrellas = 2× y 8 giros gratis, 4 = 8× y 12 giros, 5 = 40× y 20 giros. ' +
                         'Los giros gratis pagan ×' + FREE_MULTIPLIER + '.',
                   style: { fontSize: '12.5px', color: 'var(--ink-2)', marginTop: '6px' } })
       ]));
@@ -709,6 +894,7 @@
       return {
         destroy: function () {
           autoRunning = false;
+          if (offBank) offBank();
           document.removeEventListener('keydown', onKey);
         }
       };

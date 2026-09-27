@@ -7,10 +7,12 @@
 <meta name="description" content="Casino Royale — 12 máquinas de casino con animaciones, niveles y logros. Juego con dinero ficticio.">
 <title>Casino Royale — 12 máquinas</title>
 
-<!-- Fuentes como mejora progresiva: si no hay red, se usan las del sistema. -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+<!--
+  Sin fuentes externas a propósito: el enlace a Google Fonts fallaba al abrir
+  el fichero sin conexión (o con la red filtrada) y llenaba la consola de
+  errores. Se usan las del sistema, que están en cualquier ordenador, y así
+  la página no hace NI UNA sola petición de red.
+-->
 
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎰</text></svg>">
 
@@ -95,6 +97,7 @@
 
 <!-- ======================= barajas y utilidades de juego ======================= -->
 <script src="js/games/deck.js"></script>
+<script src="js/games/slot-symbols.js"></script>
 
 <!-- ======================= las 12 máquinas ======================= -->
 <script src="js/games/slots.js"></script>

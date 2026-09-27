@@ -304,7 +304,11 @@
     }
 
     var chipRow = el('.bet__chips');
-    var chipButtons = CHIPS.map(function (c) {
+    /* Sólo las fichas que caben entre el mínimo y el máximo de la mesa: con
+       una apuesta mínima de 5 € no tiene sentido enseñar la de 0,50 €. */
+    var usableChips = CHIPS.filter(function (c) { return c >= min && c <= hardMax; });
+    if (!usableChips.length) usableChips = [min];
+    var chipButtons = usableChips.map(function (c) {
       var b = el('button.chip', {
         type: 'button',
         'data-amount': c,

@@ -67,6 +67,7 @@ load('js/core/ui.js');
 load('js/core/progress.js');
 load('js/core/engine.js');
 load('js/games/deck.js');
+load('js/games/slot-symbols.js');
 [
   'slots', 'roulette', 'blackjack', 'videopoker', 'baccarat',
   'dice', 'mines', 'crash', 'plinko', 'hilo', 'keno', 'scratch'
@@ -210,19 +211,36 @@ group('2. Tragaperras');
   ok(countsOk, 'cada tira lleva el recuento exacto de cada símbolo');
   ok(gapOk, 'ninguna ventana de 3 celdas muestra dos dispersos ni dos comodines');
 
-  /* línea concreta: 5 coronas paga 2000 por línea */
+  /* línea concreta: 5 BAR paga 2000 por línea */
   const g = [];
-  for (let i = 0; i < 5; i++) g.push(['crown', 'crown', 'crown']);
+  for (let i = 0; i < 5; i++) g.push(['bar', 'bar', 'bar']);
   const ev = L.evaluate(g);
-  ok(ev.lineMult >= 2000, 'pantalla llena de coronas paga al menos 2.000 por línea', ev.lineMult);
+  ok(ev.lineMult >= 2000, 'pantalla llena de BAR paga al menos 2.000 por línea', ev.lineMult);
   near(L.payoutFor({ lineMult: 2000, scatterMult: 0 }, 10, 1), 2000, 0.01,
        'payoutFor: 2.000 por línea con 10 € de apuesta total = 2.000 €');
 
   /* el comodín sustituye */
-  const g2 = [['wild', 'x', 'x'], ['seven', 'x', 'x'], ['seven', 'x', 'x'], ['lemon', 'x', 'x'], ['lemon', 'x', 'x']];
-  const ev2 = L.evaluate(g2.map(c => c.map(v => v === 'x' ? 'cherry' : v)));
-  const sevenWin = ev2.lines.filter(w => w.symbol === 'seven' && w.count === 3)[0];
+  const g2 = [['comodin', 'x', 'x'], ['siete', 'x', 'x'], ['siete', 'x', 'x'],
+              ['limon', 'x', 'x'], ['limon', 'x', 'x']];
+  const ev2 = L.evaluate(g2.map(c => c.map(v => v === 'x' ? 'cereza' : v)));
+  const sevenWin = ev2.lines.filter(w => w.symbol === 'siete' && w.count === 3)[0];
   ok(!!sevenWin, 'el comodín completa un trío de sietes');
+
+  /* ningún símbolo puede ser una carta de la baraja ni un emoji */
+  const idsOk = L.SYMBOLS.every(sym => /^[a-z]+$/.test(sym.id) && !!sym.name);
+  ok(idsOk, 'todos los símbolos tienen id e identificador de dibujo propios');
+  ok(L.SYMBOLS.length === 10, 'hay 10 símbolos en la tira', L.SYMBOLS.length);
+  ok(L.SYMBOLS.reduce((a, sym) => a + sym.n, 0) === L.STRIP_LEN,
+     'los recuentos suman la longitud de la tira (' + L.STRIP_LEN + ')');
+  ok(!L.SYMBOLS.some(sym => sym.glyph !== undefined),
+     'ya no quedan emoji en la definición de los símbolos');
+
+  /* un id desconocido no debe reventar la evaluación */
+  let crashed = false;
+  try { L.evaluate([['zzz','zzz','zzz'],['zzz','zzz','zzz'],['zzz','zzz','zzz'],
+                    ['zzz','zzz','zzz'],['zzz','zzz','zzz']]); }
+  catch (e) { crashed = true; }
+  ok(!crashed, 'un símbolo desconocido no rompe la evaluación');
 
   /* RTP medido */
   let wag = 0, ret = 0, owed = 0;

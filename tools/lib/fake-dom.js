@@ -122,6 +122,9 @@ class Node {
     if (k === 'class') this.className = v;
     else if (k === 'id') this.id = String(v);
   }
+  /* Los <use> de SVG usan href con espacio de nombres. */
+  setAttributeNS(ns, k, v) { this.setAttribute(k, v); }
+  getAttributeNS(ns, k) { return this.getAttribute(k); }
   getAttribute(k) { return k in this.attributes ? this.attributes[k] : null; }
   removeAttribute(k) { delete this.attributes[k]; }
   hasAttribute(k) { return k in this.attributes; }

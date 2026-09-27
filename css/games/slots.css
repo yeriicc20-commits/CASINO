@@ -1,84 +1,124 @@
 /* =========================================================================
    slots.css — tragaperras
+
+   La máquina se dibuja como un MUEBLE de anchura acotada, no estirada a
+   todo el ancho de la pantalla: una tragaperras real es alta y estrecha, y
+   estirarla hacía que los carretes se vieran enormes y descolocados.
    ========================================================================= */
 
-.slots { position: relative; display: flex; flex-direction: column; gap: var(--s-4); }
+.slots {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+/* ------------------------------ el mueble ------------------------------ */
+
+.cabinet {
+  width: 100%;
+  max-width: 660px;          /* la clave: no ocupa toda la pantalla */
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(420px 200px at 50% -10%, rgba(245, 196, 81, .14), transparent 65%),
+    linear-gradient(175deg, #232842 0%, #161a2e 45%, #0f121f 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .12),
+    inset 0 0 0 1px rgba(245, 196, 81, .18),
+    0 18px 48px rgba(0, 0, 0, .55);
+}
+
+/* Cuerpo: carretes a la izquierda, palanca a la derecha. */
+.cabinet__body {
+  display: flex;
+  align-items: stretch;
+  gap: var(--s-3);
+}
 
 /* ------------------------------- letrero ------------------------------- */
 
 .slots__sign {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  padding: 9px 20px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 7px 18px;
   margin: 0 auto;
   border-radius: var(--r-pill);
-  background: linear-gradient(180deg, rgba(0, 0, 0, .5), rgba(0, 0, 0, .3));
+  background: linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .32));
   box-shadow: inset 0 0 0 1px var(--line-gold), inset 0 2px 8px rgba(0, 0, 0, .5);
 }
 .slots__signlabel {
-  font-size: 10.5px; font-weight: 700;
+  font-size: 10px; font-weight: 700;
   letter-spacing: .16em; text-transform: uppercase;
   color: var(--ink-3);
 }
 .slots__signvalue {
   font-family: var(--font-display);
-  font-size: 22px; font-weight: 800;
+  font-size: 19px; font-weight: 800;
   letter-spacing: -.02em;
 }
 
-/* --------------------------- aviso de giros gratis --------------------------- */
+/* --------------------------- aviso giros gratis --------------------------- */
 
 .slots__free {
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 10px 18px;
+  padding: 8px 16px;
   margin: 0 auto;
   border-radius: var(--r-pill);
-  background: linear-gradient(180deg, rgba(139, 92, 246, .28), rgba(139, 92, 246, .12));
-  box-shadow: inset 0 0 0 1px rgba(177, 140, 255, .5), 0 0 24px rgba(139, 92, 246, .3);
-  font-size: 13.5px;
+  background: linear-gradient(180deg, rgba(139, 92, 246, .3), rgba(139, 92, 246, .12));
+  box-shadow: inset 0 0 0 1px rgba(177, 140, 255, .5), 0 0 22px rgba(139, 92, 246, .3);
+  font-size: 13px;
   animation: free-glow 1.8s var(--ease-smooth) infinite;
 }
 .slots__free[hidden] { display: none; }
-.slots__freeicon { font-size: 18px; animation: throb 1.2s var(--ease-smooth) infinite; }
+.slots__freeicon { display: grid; place-items: center; width: 22px; height: 22px; }
+.slots__freeicon .sym { width: 100%; height: 100%; }
 @keyframes free-glow {
   0%, 100% { box-shadow: inset 0 0 0 1px rgba(177,140,255,.5), 0 0 18px rgba(139,92,246,.26); }
-  50%      { box-shadow: inset 0 0 0 1px rgba(177,140,255,.8), 0 0 36px rgba(139,92,246,.5); }
+  50%      { box-shadow: inset 0 0 0 1px rgba(177,140,255,.8), 0 0 34px rgba(139,92,246,.5); }
 }
 
 /* ------------------------------- carretes ------------------------------- */
 
 .reels__frame {
   position: relative;
-  padding: 14px;
-  border-radius: var(--r-lg);
-  background:
-    linear-gradient(180deg, #0a0c16, #05060c);
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 11px;
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, #0a0c16, #05060c);
   box-shadow:
-    inset 0 0 0 2px rgba(245, 196, 81, .28),
-    inset 0 0 0 7px rgba(0, 0, 0, .5),
-    inset 0 6px 22px rgba(0, 0, 0, .8),
-    0 10px 34px rgba(0, 0, 0, .5);
+    inset 0 0 0 2px rgba(245, 196, 81, .3),
+    inset 0 0 0 6px rgba(0, 0, 0, .55),
+    inset 0 5px 20px rgba(0, 0, 0, .8),
+    0 8px 26px rgba(0, 0, 0, .5);
 }
 
 .reels {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 7px;
+  gap: 5px;
 }
 
 .reel {
   position: relative;
-  /* La altura la fija el aspecto de las celdas: 3 filas cuadradas. */
-  height: clamp(186px, 30vw, 264px);
+  /* Cada carrete es una columna de 3 celdas cuadradas: la altura sale del
+     ancho disponible, así la máquina mantiene su proporción siempre. */
+  height: calc(var(--cellh) * 3);
   overflow: hidden;
-  border-radius: var(--r-sm);
-  background: linear-gradient(180deg, #151a2d 0%, #0d101c 50%, #151a2d 100%);
+  border-radius: 7px;
+  background: linear-gradient(180deg, #1a1f33 0%, #0e1119 50%, #1a1f33 100%);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, .06),
-    inset 0 10px 18px rgba(0, 0, 0, .6),
-    inset 0 -10px 18px rgba(0, 0, 0, .6);
+    inset 0 0 0 1px rgba(255, 255, 255, .07),
+    inset 0 8px 14px rgba(0, 0, 0, .55),
+    inset 0 -8px 14px rgba(0, 0, 0, .55);
 }
 
-/* Sombra superior e inferior: da profundidad de tambor real. */
+/* Altura de celda: se ajusta al ancho del mueble. */
+.cabinet { --cellh: clamp(52px, 11vw, 96px); }
+
+/* Sombra arriba y abajo: da sensación de tambor. */
 .reel::after {
   content: "";
   position: absolute; inset: 0;
@@ -86,9 +126,9 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, .58) 0%, rgba(0, 0, 0, .1) 18%,
+    rgba(0, 0, 0, .6) 0%, rgba(0, 0, 0, .1) 17%,
     transparent 40%, transparent 60%,
-    rgba(0, 0, 0, .1) 82%, rgba(0, 0, 0, .58) 100%
+    rgba(0, 0, 0, .1) 83%, rgba(0, 0, 0, .6) 100%
   );
 }
 
@@ -102,57 +142,55 @@
 .cell {
   display: grid;
   place-items: center;
-  height: calc(clamp(186px, 30vw, 264px) / 3);
+  height: var(--cellh);
   flex: 0 0 auto;
   position: relative;
-  transition: filter var(--t-mid) linear, transform var(--t-mid) var(--ease-out);
+  transition: filter var(--t-mid) linear;
 }
-.cell + .cell { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04); }
+.cell + .cell { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05); }
 
+/* El símbolo SVG. */
 .cell__glyph {
-  font-size: clamp(30px, 5.4vw, 46px);
-  line-height: 1;
-  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .6));
+  width: 72%;
+  height: 72%;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .65));
   transition: transform var(--t-mid) var(--ease-spring);
 }
 
-/* comodín y disperso destacan siempre un poco */
-.cell--wild .cell__glyph { filter: drop-shadow(0 0 10px rgba(177, 140, 255, .7)) drop-shadow(0 3px 5px rgba(0,0,0,.6)); }
-.cell--scatter .cell__glyph { filter: drop-shadow(0 0 10px rgba(245, 196, 81, .75)) drop-shadow(0 3px 5px rgba(0,0,0,.6)); }
+.sym { display: block; }
 
-/* celda apagada mientras se resaltan las ganadoras */
-.cell.is-dim { filter: brightness(.34) saturate(.45); }
+/* comodín y estrella brillan un poco siempre */
+.cell--wild .cell__glyph { filter: drop-shadow(0 0 9px rgba(177, 140, 255, .8)) drop-shadow(0 3px 4px rgba(0,0,0,.6)); }
+.cell--scatter .cell__glyph { filter: drop-shadow(0 0 9px rgba(245, 196, 81, .85)) drop-shadow(0 3px 4px rgba(0,0,0,.6)); }
 
-/* celda ganadora */
-.cell.is-win {
-  animation: cell-win 620ms var(--ease-out) infinite alternate;
-}
+.cell.is-dim { filter: brightness(.5) saturate(.55); opacity: .75; }
+
+.cell.is-win { animation: cell-win 620ms var(--ease-out) infinite alternate; }
 .cell.is-win::before {
   content: "";
-  position: absolute; inset: 5px;
-  border-radius: var(--r-sm);
-  background: radial-gradient(circle, rgba(245, 196, 81, .32), transparent 68%);
-  box-shadow: inset 0 0 0 2px rgba(255, 224, 143, .7);
+  position: absolute; inset: 4px;
+  border-radius: 6px;
+  background: radial-gradient(circle, rgba(245, 196, 81, .3), transparent 68%);
+  box-shadow: inset 0 0 0 2px rgba(255, 224, 143, .75);
 }
-.cell.is-win .cell__glyph { transform: scale(1.16); }
+.cell.is-win .cell__glyph { transform: scale(1.12); }
 @keyframes cell-win {
-  from { filter: brightness(1) drop-shadow(0 0 0 rgba(245,196,81,0)); }
-  to   { filter: brightness(1.32) drop-shadow(0 0 14px rgba(245,196,81,.85)); }
+  from { filter: brightness(1); }
+  to   { filter: brightness(1.3) drop-shadow(0 0 12px rgba(245,196,81,.85)); }
 }
 
-/* disperso premiado */
 .cell.is-scatter-win::before {
   content: "";
-  position: absolute; inset: 5px;
+  position: absolute; inset: 4px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(177, 140, 255, .4), transparent 70%);
-  box-shadow: inset 0 0 0 2px rgba(177, 140, 255, .8);
+  background: radial-gradient(circle, rgba(245, 196, 81, .34), transparent 70%);
+  box-shadow: inset 0 0 0 2px rgba(245, 196, 81, .85);
   animation: scatter-spin 1.4s linear infinite;
 }
-.cell.is-scatter-win .cell__glyph { transform: scale(1.2); }
+.cell.is-scatter-win .cell__glyph { transform: scale(1.14); }
 @keyframes scatter-spin {
   from { transform: rotate(0) scale(1); }
-  50%  { transform: rotate(180deg) scale(1.1); }
+  50%  { transform: rotate(180deg) scale(1.08); }
   to   { transform: rotate(360deg) scale(1); }
 }
 
@@ -160,7 +198,7 @@
 
 .reels__lines {
   position: absolute;
-  inset: 14px;
+  inset: 11px;
   z-index: 4;
   pointer-events: none;
   overflow: visible;
@@ -177,12 +215,260 @@
              winline-pulse 1.2s var(--ease-smooth) 560ms infinite;
 }
 @keyframes winline-draw { to { stroke-dashoffset: 0; } }
-@keyframes winline-pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: .42; }
+@keyframes winline-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+
+/* ------------------------------ LA PALANCA ------------------------------
+
+   Montaje de altura fija y centrado junto a los carretes. Antes la palanca
+   se estiraba a lo alto del mueble y la bola quedaba flotando arriba con la
+   base suelta abajo; ahora bola, barra y base forman una sola pieza.
+   ------------------------------------------------------------------------ */
+
+.lever {
+  --pull: 0;
+  --travel: 62px;
+  position: relative;
+  flex: 0 0 66px;
+  height: 214px;
+  align-self: center;
+  cursor: grab;
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  overflow: hidden;           /* la barra "entra" en la base al tirar */
+}
+.lever:active { cursor: grabbing; }
+
+/* Ranura por la que corre la barra. */
+.lever__slot {
+  position: absolute;
+  top: 26px; bottom: 34px; left: 50%;
+  width: 13px;
+  margin-left: -6.5px;
+  border-radius: var(--r-pill);
+  background: linear-gradient(180deg, #04050a, #0c0f1c);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08), inset 0 2px 7px rgba(0, 0, 0, .85);
 }
 
-/* ------------------------------ lista lateral ------------------------------ */
+/* Base: la carcasa atornillada al mueble, al pie del montaje. */
+.lever__base {
+  position: absolute;
+  bottom: 0; left: 50%;
+  width: 52px; height: 34px;
+  margin-left: -26px;
+  border-radius: 9px 9px 6px 6px;
+  background: linear-gradient(180deg, #59617f 0%, #39405a 42%, #222840 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .28),
+    inset 0 -3px 6px rgba(0, 0, 0, .55),
+    0 4px 10px rgba(0, 0, 0, .55);
+  z-index: 3;
+}
+/* Boca por donde entra la barra. */
+.lever__base::before {
+  content: "";
+  position: absolute;
+  top: -3px; left: 50%;
+  width: 17px; height: 8px;
+  margin-left: -8.5px;
+  border-radius: var(--r-pill);
+  background: #05060c;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, .9);
+}
+/* Dos tornillos. */
+.lever__base::after {
+  content: "";
+  position: absolute;
+  bottom: 8px; left: 50%;
+  width: 34px; height: 6px;
+  margin-left: -17px;
+  border-radius: var(--r-pill);
+  background:
+    radial-gradient(circle 3px at 3px 3px, #8f98b8, #2a3048 70%),
+    radial-gradient(circle 3px at 31px 3px, #8f98b8, #2a3048 70%);
+  background-repeat: no-repeat;
+}
+
+/* Brazo: bola + barra. Baja según --pull. */
+.lever__arm {
+  position: absolute;
+  top: 0; left: 50%;
+  margin-left: -17px;
+  width: 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  transform: translateY(calc(var(--pull) * var(--travel)));
+  transition: transform 90ms linear;
+}
+
+.lever__knob {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #ff9aa2 0%, #e03a4a 44%, #8c1226 100%);
+  box-shadow:
+    inset 0 -4px 8px rgba(0, 0, 0, .45),
+    0 4px 10px rgba(0, 0, 0, .6),
+    0 0 16px rgba(224, 58, 74, .35);
+  transition: box-shadow var(--t-mid) var(--ease-out);
+}
+
+.lever__stick {
+  width: 10px;
+  height: 152px;
+  margin-top: -4px;
+  border-radius: 0 0 var(--r-pill) var(--r-pill);
+  background: linear-gradient(90deg, #4d5570 0%, #cfd6ea 36%, #949cbd 60%, #434a66 100%);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .5);
+}
+
+@media (hover: hover) {
+  .lever:hover .lever__knob {
+    box-shadow:
+      inset 0 -4px 8px rgba(0, 0, 0, .45),
+      0 6px 14px rgba(0, 0, 0, .6),
+      0 0 26px rgba(224, 58, 74, .7);
+  }
+}
+
+/* Tirón completo: baja, se queda un instante y vuelve con rebote. */
+.lever.is-pulled .lever__arm { animation: lever-pull 460ms var(--ease-out); }
+@keyframes lever-pull {
+  0%   { transform: translateY(0); }
+  20%  { transform: translateY(var(--travel)); }
+  48%  { transform: translateY(var(--travel)); }
+  76%  { transform: translateY(-5px); }
+  100% { transform: translateY(0); }
+}
+
+/* Mientras gira, la palanca se aparta del foco. */
+.stage.is-busy .lever { opacity: .5; pointer-events: none; }
+
+/* Latido de atención cuando está lista. */
+.lever:not(.is-pulled) .lever__knob { animation: knob-breathe 3s var(--ease-smooth) infinite; }
+@keyframes knob-breathe {
+  0%, 100% { box-shadow: inset 0 -4px 8px rgba(0,0,0,.45), 0 4px 10px rgba(0,0,0,.6), 0 0 13px rgba(224,58,74,.3); }
+  50%      { box-shadow: inset 0 -4px 8px rgba(0,0,0,.45), 0 4px 10px rgba(0,0,0,.6), 0 0 26px rgba(224,58,74,.6); }
+}
+.stage.is-busy .lever__knob { animation: none; }
+
+/* ----------------------------- MARCADORES ----------------------------- */
+
+.meters {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.meter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .3));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07), inset 0 2px 6px rgba(0, 0, 0, .5);
+}
+.meter__label {
+  font-size: 8.5px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.meter__value {
+  font-family: var(--font-num);
+  font-size: 14px; font-weight: 500;
+  color: var(--gold-hi);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 10px rgba(245, 196, 81, .35);
+  white-space: nowrap;
+}
+.meter__value.is-win { color: var(--win); text-shadow: 0 0 10px rgba(53, 210, 149, .4); }
+
+/* ------------------------ BOTONES DE LA MÁQUINA ------------------------ */
+
+.machine-btns {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  flex: 1 1 300px;
+  max-width: 420px;
+  align-self: stretch;
+  align-content: end;
+}
+.machine-btns .btn { width: 100%; }
+
+/* Botón activo (rápido / auto en marcha). */
+.btn.is-on {
+  --btn-face-1: var(--gold-hi);
+  --btn-face-2: var(--gold-lo);
+  --btn-edge: var(--gold-deep);
+  color: #2a1d02;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .3),
+    0 0 0 1px rgba(245, 196, 81, .5),
+    0 0 16px rgba(245, 196, 81, .45);
+}
+.btn.is-on .btn__sub { opacity: .75; }
+
+/* -------------------------- listas y tablas -------------------------- */
 
 .slots__winlist { display: flex; flex-direction: column; }
 .slots__winlist .panel__row:first-child { border-top: 0; }
+
+.panel__sym { width: 17px; height: 17px; vertical-align: -3px; margin-right: 3px; }
+
+.ptable__sym { display: inline-flex; align-items: center; gap: 8px; }
+.ptable__sym .sym { width: 24px; height: 24px; flex: 0 0 auto; }
+
+/* ------------------------------- móvil ------------------------------- */
+
+@media (max-width: 560px) {
+  .cabinet { --cellh: clamp(44px, 15vw, 70px); padding: var(--s-3); }
+  .lever { flex-basis: 54px; height: 176px; --travel: 50px; }
+  .lever__stick { height: 118px; width: 9px; }
+  .lever__knob { width: 28px; height: 28px; }
+  .lever__arm { width: 28px; margin-left: -14px; }
+  .lever__base { width: 44px; height: 28px; margin-left: -22px; }
+  .machine-btns { max-width: none; }
+  .meter__value { font-size: 12px; }
+}
+
+/* ------------------- alineación con el mueble -------------------
+   La barra de controles se ciñe al mismo ancho que la máquina y se
+   centra igual, para que apuesta y botones queden justo debajo de los
+   carretes en lugar de estirarse por toda la pantalla.
+   ---------------------------------------------------------------- */
+
+/* Panel de mando del mismo ancho que la máquina: la apuesta a la izquierda
+   y los cuatro botones a la derecha en dos filas. Probé a ponerlo todo en
+   una sola fila (quedaba un hueco vacío en medio) y a apilarlo a lo ancho
+   (las fichas quedaban desperdigadas); en dos columnas queda compacto. */
+.game[data-game="slots"] .controls {
+  width: 100%;
+  max-width: 660px;
+  margin: 0 auto;
+  align-items: stretch;
+  gap: var(--s-3);
+}
+
+.game[data-game="slots"] .bet {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.game[data-game="slots"] .machine-btns {
+  flex: 1 1 280px;
+  min-width: 0;
+  max-width: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(48px, auto);
+  align-content: center;
+}
+
+@media (max-width: 680px) {
+  .game[data-game="slots"] .controls { max-width: none; flex-direction: column; }
+  .game[data-game="slots"] .bet,
+  .game[data-game="slots"] .machine-btns { flex: 1 1 auto; width: 100%; }
+}
