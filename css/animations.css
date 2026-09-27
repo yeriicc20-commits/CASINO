@@ -1,0 +1,246 @@
+/* =========================================================================
+   animations.css — capa de efectos y biblioteca de keyframes.
+
+   Regla de rendimiento: sólo se animan `transform` y `opacity` (el
+   compositor los resuelve sin recalcular layout). Nada de animar
+   width/height/top/left en bucles de juego.
+   ========================================================================= */
+
+/* --------------------------- lienzo de partículas --------------------------- */
+
+.fx-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-fx);
+  pointer-events: none;
+}
+
+/* ------------------------------ destello ------------------------------ */
+
+.fx-flash {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-fx) - 1);
+  pointer-events: none;
+  animation: fx-flash 420ms var(--ease-out) forwards;
+}
+@keyframes fx-flash {
+  0%   { opacity: 0; }
+  18%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* --------------------------- números flotantes --------------------------- */
+
+.fx-float {
+  position: fixed;
+  z-index: var(--z-toast);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--win);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .8), 0 0 24px rgba(53, 210, 149, .6);
+  animation: fx-float 1.5s var(--ease-out) forwards;
+  white-space: nowrap;
+}
+.fx-float.is-negative {
+  color: var(--lose);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .8), 0 0 20px rgba(255, 107, 126, .5);
+}
+.fx-float.is-big { font-size: 42px; }
+@keyframes fx-float {
+  0%   { transform: translate(-50%, -50%) scale(.5); opacity: 0; }
+  16%  { transform: translate(-50%, -62%) scale(1.14); opacity: 1; }
+  30%  { transform: translate(-50%, -66%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -150%) scale(.94); opacity: 0; }
+}
+
+/* -------------------------------- ondas -------------------------------- */
+
+.fx-ripple {
+  position: fixed;
+  z-index: calc(var(--z-fx) - 1);
+  width: 20px; height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid rgba(255, 215, 110, .7);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: fx-ripple 700ms var(--ease-out) forwards;
+}
+@keyframes fx-ripple {
+  from { transform: scale(.3); opacity: .9; }
+  to   { transform: scale(7); opacity: 0; }
+}
+
+/* ------------------------------- sacudida ------------------------------- */
+
+.fx-shake { animation: fx-shake 420ms var(--ease-smooth); }
+@keyframes fx-shake {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-5px, 2px) rotate(-.3deg); }
+  30% { transform: translate(4px, -2px) rotate(.3deg); }
+  45% { transform: translate(-3px, 1px) rotate(-.2deg); }
+  60% { transform: translate(3px, -1px) rotate(.2deg); }
+  80% { transform: translate(-1px, 1px); }
+}
+
+.fx-shake-hard { animation: fx-shake-hard 620ms var(--ease-smooth); }
+@keyframes fx-shake-hard {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  10% { transform: translate(-11px, 5px) rotate(-.7deg) scale(1.006); }
+  22% { transform: translate(10px, -6px) rotate(.7deg) scale(1.004); }
+  34% { transform: translate(-8px, 4px) rotate(-.5deg); }
+  46% { transform: translate(7px, -3px) rotate(.4deg); }
+  58% { transform: translate(-5px, 2px); }
+  72% { transform: translate(3px, -1px); }
+  86% { transform: translate(-1px, 1px); }
+}
+
+/* -------------------------------- pulsos -------------------------------- */
+
+.fx-pulse { animation: fx-pulse 700ms var(--ease-out); }
+@keyframes fx-pulse {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
+.fx-pulse-gold { animation: fx-pulse-gold 700ms var(--ease-out); }
+@keyframes fx-pulse-gold {
+  0%   { transform: scale(1); filter: brightness(1); }
+  25%  { transform: scale(1.06); filter: brightness(1.4) drop-shadow(0 0 16px rgba(245,196,81,.8)); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.fx-pulse-bad { animation: fx-pulse-bad 640ms var(--ease-out); }
+@keyframes fx-pulse-bad {
+  0%   { transform: scale(1); }
+  20%  { transform: scale(.96); filter: brightness(.8) saturate(1.5); }
+  100% { transform: scale(1); filter: none; }
+}
+
+/* ------------------------ entradas reutilizables ------------------------ */
+
+.anim-in-up    { animation: in-up var(--t-slow) var(--ease-out) backwards; }
+@keyframes in-up   { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+.anim-in-down  { animation: in-down var(--t-slow) var(--ease-out) backwards; }
+@keyframes in-down { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: none; } }
+
+.anim-in-scale { animation: in-scale var(--t-slow) var(--ease-spring) backwards; }
+@keyframes in-scale { from { opacity: 0; transform: scale(.82); } to { opacity: 1; transform: scale(1); } }
+
+.anim-in-left  { animation: in-left var(--t-slow) var(--ease-out) backwards; }
+@keyframes in-left { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: none; } }
+
+/* Aparición en cascada: se aplica a los hijos de un contenedor.
+   12 pasos cubren cualquier rejilla que usemos. */
+.stagger > * { animation: in-up 460ms var(--ease-out) backwards; }
+.stagger > *:nth-child(1)  { animation-delay: 30ms; }
+.stagger > *:nth-child(2)  { animation-delay: 70ms; }
+.stagger > *:nth-child(3)  { animation-delay: 110ms; }
+.stagger > *:nth-child(4)  { animation-delay: 150ms; }
+.stagger > *:nth-child(5)  { animation-delay: 190ms; }
+.stagger > *:nth-child(6)  { animation-delay: 230ms; }
+.stagger > *:nth-child(7)  { animation-delay: 270ms; }
+.stagger > *:nth-child(8)  { animation-delay: 310ms; }
+.stagger > *:nth-child(9)  { animation-delay: 350ms; }
+.stagger > *:nth-child(10) { animation-delay: 390ms; }
+.stagger > *:nth-child(11) { animation-delay: 430ms; }
+.stagger > *:nth-child(12) { animation-delay: 470ms; }
+.stagger > *:nth-child(n+13) { animation-delay: 510ms; }
+
+/* ---------------------------- brillos y auras ---------------------------- */
+
+/* Aura pulsante para elementos "calientes" (bote, multiplicador alto). */
+.glow-pulse { animation: glow-pulse 2s var(--ease-smooth) infinite; }
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(245, 196, 81, .5)); }
+  50%      { filter: drop-shadow(0 0 20px rgba(245, 196, 81, .95)); }
+}
+
+/* Texto que "respira" — para contadores de bote. */
+.throb { animation: throb 1.6s var(--ease-smooth) infinite; }
+@keyframes throb {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.035); }
+}
+
+/* Barrido metálico sobre un texto (letreros). */
+.shimmer {
+  background: linear-gradient(
+    100deg,
+    var(--gold-lo) 0%, var(--gold) 26%, #fff6d8 42%,
+    var(--gold) 58%, var(--gold-lo) 82%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: shimmer 3.2s linear infinite;
+}
+@keyframes shimmer {
+  from { background-position: 180% 0; }
+  to   { background-position: -80% 0; }
+}
+
+/* Cartel de neón con parpadeo leve. */
+.neon {
+  color: var(--gold-hi);
+  text-shadow:
+    0 0 6px rgba(245, 196, 81, .9),
+    0 0 18px rgba(245, 196, 81, .6),
+    0 0 40px rgba(245, 196, 81, .35);
+  animation: neon-flicker 5s steps(1, end) infinite;
+}
+@keyframes neon-flicker {
+  0%, 92%, 96%, 100% { opacity: 1; }
+  94%  { opacity: .72; }
+  98%  { opacity: .85; }
+}
+
+/* Cargando: tres puntos. */
+.dots::after {
+  content: "";
+  animation: dots 1.2s steps(4, end) infinite;
+}
+@keyframes dots {
+  0%   { content: ""; }
+  25%  { content: "."; }
+  50%  { content: ".."; }
+  75%  { content: "..."; }
+}
+
+/* --------------------- RESPETO POR "REDUCIR MOVIMIENTO" --------------------- */
+
+/*
+  Con prefers-reduced-motion el juego sigue siendo jugable y legible:
+  se anulan las animaciones decorativas e infinitas, pero se conservan
+  las transiciones cortas que dan feedback de pulsación.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .ambient, .fx-canvas, .hero::after, .brand__mark::after { display: none !important; }
+  .btn { transition: transform 80ms linear !important; }
+  .btn:active:not(:disabled) { transform: translateY(2px) !important; }
+}
+
+/*
+  Interruptor manual desde los ajustes: misma idea, controlada por el
+  usuario en la propia app (clase en <html>).
+*/
+html.no-anim *, html.no-anim *::before, html.no-anim *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 60ms !important;
+}
+html.no-anim .ambient,
+html.no-anim .hero::after,
+html.no-anim .brand__mark::after { display: none !important; }

@@ -1,0 +1,414 @@
+/* =========================================================================
+   buttons.css — botones y fichas.
+
+   Anatomía de un botón (por eso "apetece" pulsarlo):
+     1. Un borde inferior sólido más oscuro  -> parece una pieza física.
+     2. Degradado vertical + luz interior arriba -> volumen.
+     3. .btn__shine: reflejo diagonal que barre al pasar el ratón.
+     4. .btn__ink: onda que nace justo donde se ha pulsado.
+     5. Al pulsar baja 2px y el borde inferior se reduce -> se "hunde".
+   ========================================================================= */
+
+.btn {
+  --btn-h: 46px;
+  --btn-px: 22px;
+  --btn-fs: 14.5px;
+  --btn-face-1: #2b3152;
+  --btn-face-2: #1d2240;
+  --btn-edge: #0e1020;
+  --btn-ink: var(--ink);
+  --btn-lift: 4px;
+  --btn-glow: transparent;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--btn-h);
+  padding: 0 var(--btn-px);
+  border-radius: var(--r-md);
+  font-family: var(--font-display);
+  font-size: var(--btn-fs);
+  font-weight: 650;
+  letter-spacing: .015em;
+  color: var(--btn-ink);
+  white-space: nowrap;
+  isolation: isolate;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateZ(0);            /* capa propia: animación sin repintar */
+  will-change: transform;
+
+  background:
+    linear-gradient(180deg, var(--btn-face-1) 0%, var(--btn-face-2) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .16),      /* luz superior */
+    inset 0 -1px 0 rgba(0, 0, 0, .3),            /* sombra inferior interna */
+    0 var(--btn-lift) 0 var(--btn-edge),         /* canto físico */
+    0 calc(var(--btn-lift) + 5px) 16px rgba(0, 0, 0, .42),
+    var(--btn-glow);
+
+  transition:
+    transform var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out),
+    filter var(--t-fast) linear,
+    opacity var(--t-fast) linear;
+}
+
+.btn__content {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.btn__labels { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1.12; }
+.btn__label { display: block; }
+.btn__sub {
+  font-family: var(--font);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  opacity: .62;
+}
+
+.btn__icon { font-size: 1.15em; line-height: 1; }
+
+/* --- reflejo que barre en hover --- */
+.btn__shine {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    103deg,
+    transparent 30%,
+    rgba(255, 255, 255, .17) 46%,
+    rgba(255, 255, 255, .3) 50%,
+    rgba(255, 255, 255, .17) 54%,
+    transparent 70%
+  );
+  transform: translateX(-140%);
+  opacity: 0;
+  transition: opacity var(--t-fast) linear;
+}
+
+/* --- onda al pulsar --- */
+.btn__ink {
+  position: absolute;
+  z-index: 1;
+  width: 14px; height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 70%);
+  pointer-events: none;
+  animation: btn-ink 600ms var(--ease-out) forwards;
+}
+
+@keyframes btn-ink {
+  from { transform: scale(0); opacity: .85; }
+  to   { transform: scale(22); opacity: 0; }
+}
+
+.btn__badge {
+  position: absolute;
+  top: -5px; right: -5px;
+  z-index: 3;
+  min-width: 20px; height: 20px;
+  padding: 0 5px;
+  display: grid; place-items: center;
+  border-radius: var(--r-pill);
+  background: linear-gradient(180deg, var(--crimson-hi), var(--crimson));
+  box-shadow: 0 2px 8px rgba(224, 58, 82, .55), inset 0 1px 0 rgba(255,255,255,.3);
+  font-family: var(--font);
+  font-size: 11px; font-weight: 800;
+  color: #fff;
+}
+
+/* ------------------------------ estados ------------------------------ */
+
+@media (hover: hover) {
+  .btn:hover:not(:disabled):not(.is-disabled) {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, .22),
+      inset 0 -1px 0 rgba(0, 0, 0, .3),
+      0 calc(var(--btn-lift) + 2px) 0 var(--btn-edge),
+      0 calc(var(--btn-lift) + 10px) 24px rgba(0, 0, 0, .5),
+      var(--btn-glow);
+    filter: brightness(1.09) saturate(1.06);
+  }
+  .btn:hover:not(:disabled):not(.is-disabled) .btn__shine {
+    opacity: 1;
+    animation: btn-shine 720ms var(--ease-smooth);
+  }
+}
+
+@keyframes btn-shine {
+  from { transform: translateX(-140%); }
+  to   { transform: translateX(140%); }
+}
+
+/* Se hunde: baja hasta casi tocar su propio canto. */
+.btn:active:not(:disabled):not(.is-disabled) {
+  transform: translateY(calc(var(--btn-lift) - 1px)) scale(.985);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, .42),
+    inset 0 1px 0 rgba(255, 255, 255, .06),
+    0 1px 0 var(--btn-edge),
+    0 2px 5px rgba(0, 0, 0, .35);
+  filter: brightness(.97);
+  transition-duration: 60ms;
+}
+
+.btn:disabled, .btn.is-disabled {
+  opacity: .42;
+  filter: grayscale(.65);
+  transform: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .06),
+    0 2px 0 var(--btn-edge);
+}
+
+/* Ocupado: barrido continuo que indica "espera". */
+.btn.is-busy {
+  pointer-events: none;
+  opacity: .85;
+}
+.btn.is-busy .btn__content { opacity: .55; }
+.btn.is-busy::after {
+  content: "";
+  position: absolute; inset: 0;
+  z-index: 3;
+  background: linear-gradient(103deg, transparent 38%, rgba(255,255,255,.22) 50%, transparent 62%);
+  animation: btn-busy 900ms linear infinite;
+}
+@keyframes btn-busy {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+/* ------------------------------ variantes ------------------------------ */
+
+/* PRIMARIO — oro. El botón que el jugador debe pulsar. */
+.btn--primary {
+  --btn-face-1: var(--gold-hi);
+  --btn-face-2: var(--gold-lo);
+  --btn-edge: var(--gold-deep);
+  --btn-ink: #2a1d02;
+  --btn-glow: 0 0 22px rgba(245, 196, 81, .32);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .34);
+}
+.btn--primary:hover:not(:disabled):not(.is-disabled) {
+  --btn-glow: 0 0 30px rgba(245, 196, 81, .48);
+}
+
+/* GIRAR / JUGAR — el botón grande y protagonista. */
+.btn--play {
+  --btn-h: 62px;
+  --btn-px: 38px;
+  --btn-fs: 19px;
+  --btn-lift: 6px;
+  --btn-face-1: var(--gold-hi);
+  --btn-face-2: var(--gold-lo);
+  --btn-edge: var(--gold-deep);
+  --btn-ink: #2a1d02;
+  --btn-glow: 0 0 34px rgba(245, 196, 81, .4);
+  border-radius: var(--r-lg);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  font-weight: 800;
+}
+.btn--play:hover:not(:disabled):not(.is-disabled) {
+  --btn-glow: 0 0 46px rgba(245, 196, 81, .62);
+}
+/* Pulso lento de atención cuando está listo y no se ha pulsado. */
+.btn--play:not(:disabled):not(.is-disabled) {
+  animation: play-breathe 3.4s var(--ease-smooth) infinite;
+}
+@keyframes play-breathe {
+  0%, 100% { box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 0 rgba(0,0,0,.3),
+      0 var(--btn-lift) 0 var(--btn-edge), 0 calc(var(--btn-lift) + 5px) 16px rgba(0,0,0,.42),
+      0 0 28px rgba(245,196,81,.32); }
+  50%      { box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 0 rgba(0,0,0,.3),
+      0 var(--btn-lift) 0 var(--btn-edge), 0 calc(var(--btn-lift) + 5px) 16px rgba(0,0,0,.42),
+      0 0 46px rgba(245,196,81,.5); }
+}
+
+/* ÉXITO — cobrar, retirarse. */
+.btn--success {
+  --btn-face-1: var(--emerald-hi);
+  --btn-face-2: var(--emerald-lo);
+  --btn-edge: var(--emerald-deep);
+  --btn-ink: #032014;
+  --btn-glow: 0 0 22px rgba(53, 210, 149, .34);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .22);
+}
+.btn--success:hover:not(:disabled):not(.is-disabled) {
+  --btn-glow: 0 0 32px rgba(53, 210, 149, .5);
+}
+
+/* PELIGRO — acciones destructivas. */
+.btn--danger {
+  --btn-face-1: var(--crimson-hi);
+  --btn-face-2: #b81f36;
+  --btn-edge: var(--crimson-deep);
+  --btn-ink: #2b0208;
+  --btn-glow: 0 0 20px rgba(224, 58, 82, .34);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .2);
+}
+
+/* VIOLETA — acciones secundarias destacadas. */
+.btn--violet {
+  --btn-face-1: var(--violet-hi);
+  --btn-face-2: #6d3fe0;
+  --btn-edge: #3d1f8f;
+  --btn-ink: #150630;
+  --btn-glow: 0 0 20px rgba(139, 92, 246, .34);
+}
+
+/* FANTASMA — cristal, para lo secundario. */
+.btn--ghost {
+  --btn-face-1: rgba(255, 255, 255, .09);
+  --btn-face-2: rgba(255, 255, 255, .035);
+  --btn-edge: rgba(0, 0, 0, .45);
+  --btn-lift: 3px;
+  color: var(--ink-2);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line-2);
+}
+.btn--ghost:hover:not(:disabled):not(.is-disabled) {
+  color: var(--ink);
+  border-color: var(--line-gold);
+}
+
+/* PLANO — sin canto, para barras de herramientas. */
+.btn--flat {
+  --btn-lift: 0px;
+  --btn-face-1: rgba(255, 255, 255, .07);
+  --btn-face-2: rgba(255, 255, 255, .03);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink-2);
+}
+.btn--flat:hover:not(:disabled):not(.is-disabled) {
+  box-shadow: inset 0 0 0 1px var(--line-gold);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+.btn--flat:active:not(:disabled):not(.is-disabled) {
+  transform: scale(.97);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.4);
+}
+
+/* --------------------------- tamaños y formas --------------------------- */
+
+.btn--sm  { --btn-h: 34px; --btn-px: 13px; --btn-fs: 12.5px; --btn-lift: 3px; border-radius: var(--r-sm); }
+.btn--lg  { --btn-h: 54px; --btn-px: 30px; --btn-fs: 16.5px; --btn-lift: 5px; }
+.btn--xl  { --btn-h: 66px; --btn-px: 40px; --btn-fs: 20px;   --btn-lift: 6px; border-radius: var(--r-lg); }
+.btn--block { width: 100%; }
+.btn--icon { --btn-px: 0; width: var(--btn-h); }
+.btn--icon .btn__content { gap: 0; }
+.btn--pill { border-radius: var(--r-pill); }
+
+/* ------------------------------- FICHAS ------------------------------- */
+
+.chip {
+  position: relative;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  isolation: isolate;
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  background:
+    radial-gradient(circle at 50% 34%, #3a4166 0%, #252a48 62%, #171b30 100%);
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, .18),
+    inset 0 -3px 6px rgba(0, 0, 0, .45),
+    0 4px 0 #0d0f1c,
+    0 7px 14px rgba(0, 0, 0, .45);
+  transition: transform var(--t-fast) var(--ease-out),
+              box-shadow var(--t-fast) var(--ease-out),
+              filter var(--t-fast) linear;
+  overflow: hidden;
+}
+
+/* El anillo de muescas blancas típico de una ficha de casino. */
+.chip__ring {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(255, 255, 255, .34) 0deg 13deg,
+      transparent 13deg 45deg
+    );
+  -webkit-mask: radial-gradient(circle, transparent 60%, #000 62%, #000 100%);
+  mask: radial-gradient(circle, transparent 60%, #000 62%, #000 100%);
+  pointer-events: none;
+}
+
+.chip__face {
+  position: relative;
+  z-index: 2;
+  display: grid; place-items: center;
+  width: 62%; height: 62%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 32%, #1c2039, #10131f);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, .14), inset 0 -2px 4px rgba(0, 0, 0, .5);
+  font-family: var(--font-display);
+  font-size: 14px; font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -.01em;
+}
+
+@media (hover: hover) {
+  .chip:hover:not(.is-disabled) {
+    transform: translateY(-3px) rotate(-4deg);
+    filter: brightness(1.12);
+    box-shadow:
+      inset 0 2px 3px rgba(255, 255, 255, .22),
+      inset 0 -3px 6px rgba(0, 0, 0, .45),
+      0 7px 0 #0d0f1c,
+      0 12px 22px rgba(0, 0, 0, .5);
+  }
+}
+
+.chip:active:not(.is-disabled) {
+  transform: translateY(3px) scale(.96);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, .5),
+    0 1px 0 #0d0f1c;
+  transition-duration: 60ms;
+}
+
+.chip.is-active {
+  background: radial-gradient(circle at 50% 34%, var(--gold-hi) 0%, var(--gold) 58%, var(--gold-lo) 100%);
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, .5),
+    inset 0 -3px 6px rgba(0, 0, 0, .3),
+    0 4px 0 var(--gold-deep),
+    0 8px 20px rgba(245, 196, 81, .45),
+    0 0 0 2px rgba(255, 224, 143, .55);
+}
+.chip.is-active .chip__face {
+  background: radial-gradient(circle at 50% 32%, #fff6da, #f0c661);
+  color: #35240a;
+}
+.chip.is-active .chip__ring { background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.6) 0deg 13deg, transparent 13deg 45deg); }
+
+.chip.is-disabled { opacity: .34; filter: grayscale(.8); transform: none; }
+
+/* Fichas de colores por valor (ruleta y apuestas de mesa). */
+.chip--gold   { background: radial-gradient(circle at 50% 34%, var(--gold-hi), var(--gold-lo)); }
+.chip--red    { background: radial-gradient(circle at 50% 34%, var(--crimson-hi), #9c1226); }
+.chip--green  { background: radial-gradient(circle at 50% 34%, var(--emerald-hi), var(--emerald-deep)); }
+.chip--violet { background: radial-gradient(circle at 50% 34%, var(--violet-hi), #5b2fc7); }

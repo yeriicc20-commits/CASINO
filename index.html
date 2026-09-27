@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es" class="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d18">
+<meta name="description" content="Casino Royale — 12 máquinas de casino con animaciones, niveles y logros. Juego con dinero ficticio.">
+<title>Casino Royale — 12 máquinas</title>
+
+<!-- Fuentes como mejora progresiva: si no hay red, se usan las del sistema. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎰</text></svg>">
+
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/buttons.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/animations.css">
+<link rel="stylesheet" href="css/games/slots.css">
+<link rel="stylesheet" href="css/games/cards.css">
+<link rel="stylesheet" href="css/games/roulette.css">
+<link rel="stylesheet" href="css/games/grid.css">
+<link rel="stylesheet" href="css/games/curve.css">
+</head>
+<body>
+
+<!-- Motas de ambiente; las rellena app.js -->
+<div class="ambient" aria-hidden="true"></div>
+
+<div id="app">
+
+  <header class="topbar">
+    <div class="topbar__inner">
+
+      <div class="brand" id="brand" role="link" tabindex="0" aria-label="Volver al vestíbulo">
+        <span class="brand__mark" aria-hidden="true">🎰</span>
+        <span class="brand__text">
+          <span class="brand__name grad-gold">Casino Royale</span>
+          <span class="brand__sub">Fichas de juego</span>
+        </span>
+      </div>
+
+      <div class="hud">
+        <div class="hud__level" id="hudLevel" role="button" tabindex="0" aria-label="Ver progreso y logros">
+          <span class="hud__badge" id="hudBadge">1</span>
+          <span class="hud__xp">
+            <span class="hud__xptop">
+              <span class="hud__title" id="hudTitle">Novato</span>
+              <span class="hud__xpnum" id="hudXpNum">0/200</span>
+            </span>
+            <span class="xpbar"><span class="xpbar__fill" id="hudXpFill" style="width:0%"></span></span>
+          </span>
+        </div>
+
+        <div class="hud__money" id="hudMoney">
+          <span class="hud__label">Saldo</span>
+          <span class="hud__amount num" id="hudAmount">0,00 €</span>
+          <span class="hud__delta" id="hudDelta"></span>
+        </div>
+      </div>
+
+      <div class="topbar__actions" id="topbarActions"></div>
+
+    </div>
+  </header>
+
+  <main class="screen shell" id="screen" tabindex="-1"></main>
+
+  <footer class="foot shell">
+    <p class="foot__text">
+      <strong>Casino Royale</strong> — proyecto de entretenimiento con dinero
+      <strong>ficticio</strong>. No hay pagos reales ni compras de ningún tipo.
+    </p>
+    <p class="foot__text foot__text--dim">
+      El juego real con dinero puede generar adicción. Si te preocupa,
+      busca ayuda profesional.
+    </p>
+  </footer>
+
+</div>
+
+<!-- ======================= núcleo ======================= -->
+<script src="js/core/util.js"></script>
+<script src="js/core/store.js"></script>
+<script src="js/core/bank.js"></script>
+<script src="js/core/audio.js"></script>
+<script src="js/core/fx.js"></script>
+<script src="js/core/ui.js"></script>
+<script src="js/core/progress.js"></script>
+<script src="js/core/engine.js"></script>
+<script src="js/core/router.js"></script>
+
+<!-- ======================= barajas y utilidades de juego ======================= -->
+<script src="js/games/deck.js"></script>
+
+<!-- ======================= las 12 máquinas ======================= -->
+<script src="js/games/slots.js"></script>
+<script src="js/games/roulette.js"></script>
+<script src="js/games/blackjack.js"></script>
+<script src="js/games/videopoker.js"></script>
+<script src="js/games/baccarat.js"></script>
+<script src="js/games/dice.js"></script>
+<script src="js/games/mines.js"></script>
+<script src="js/games/crash.js"></script>
+<script src="js/games/plinko.js"></script>
+<script src="js/games/hilo.js"></script>
+<script src="js/games/keno.js"></script>
+<script src="js/games/scratch.js"></script>
+
+<!-- ======================= arranque ======================= -->
+<script src="js/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,197 @@
+/* =========================================================================
+   base.css — reset, tokens de diseño y tipografía
+   Lenguaje visual: "casino noir" — negro profundo, tapete esmeralda,
+   oro cálido y carmesí. Todo el color sale de estos tokens.
+   ========================================================================= */
+
+:root {
+  /* --- superficies --- */
+  --bg-0: #07080f;          /* fondo más profundo */
+  --bg-1: #0b0d18;          /* fondo de página */
+  --bg-2: #11142370;        /* panel translúcido */
+  --bg-3: #171b2e;          /* panel sólido */
+  --bg-4: #1f2440;          /* panel elevado */
+  --surface: rgba(23, 27, 46, .72);
+  --surface-strong: rgba(28, 33, 56, .94);
+
+  /* --- bordes y líneas --- */
+  --line: rgba(255, 255, 255, .08);
+  --line-2: rgba(255, 255, 255, .14);
+  --line-gold: rgba(245, 196, 81, .32);
+
+  /* --- texto --- */
+  --ink: #f2f4ff;
+  --ink-2: #b9c0dd;
+  --ink-3: #7d86a8;
+  --ink-inv: #14101f;
+
+  /* --- acentos --- */
+  --gold: #f5c451;
+  --gold-hi: #ffe08f;
+  --gold-lo: #c3941f;
+  --gold-deep: #8a6412;
+  --emerald: #1f9d6b;
+  --emerald-hi: #35d295;
+  --emerald-lo: #12805a;
+  --emerald-deep: #0c5a3c;
+  --felt: #0e4f3a;
+  --felt-dark: #093325;
+  --crimson: #e03a52;
+  --crimson-hi: #ff6b7e;
+  --crimson-deep: #8c1226;
+  --violet: #8b5cf6;
+  --violet-hi: #b18cff;
+  --cyan: #2dd4bf;
+  --amber: #fb923c;
+
+  /* --- semánticos --- */
+  --win: #35d295;
+  --lose: #ff6b7e;
+  --warn: #fbbf24;
+  --info: #60a5fa;
+  --accent: var(--gold);
+
+  /* --- sombras --- */
+  --sh-1: 0 1px 2px rgba(0, 0, 0, .4);
+  --sh-2: 0 4px 14px rgba(0, 0, 0, .38);
+  --sh-3: 0 12px 34px rgba(0, 0, 0, .46);
+  --sh-4: 0 24px 60px rgba(0, 0, 0, .55);
+  --glow-gold: 0 0 0 1px rgba(245, 196, 81, .4), 0 0 24px rgba(245, 196, 81, .28);
+  --glow-win: 0 0 0 1px rgba(53, 210, 149, .45), 0 0 26px rgba(53, 210, 149, .3);
+  --glow-lose: 0 0 0 1px rgba(255, 107, 126, .45), 0 0 26px rgba(255, 107, 126, .28);
+
+  /* --- radios --- */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+
+  /* --- espaciado --- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 22px; --s-6: 30px; --s-7: 40px; --s-8: 56px;
+
+  /* --- tipografía --- */
+  --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-display: "Bricolage Grotesque", "Inter", system-ui, sans-serif;
+  --font-num: "DM Mono", "SF Mono", "Cascadia Mono", ui-monospace, monospace;
+
+  /* --- movimiento --- */
+  --t-fast: 120ms;
+  --t-mid: 220ms;
+  --t-slow: 420ms;
+  --ease-out: cubic-bezier(.22, .68, 0, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --ease-smooth: cubic-bezier(.4, 0, .2, 1);
+
+  /* --- capas --- */
+  --z-bg: 0;
+  --z-content: 10;
+  --z-topbar: 60;
+  --z-fx: 200;
+  --z-toast: 300;
+  --z-modal: 400;
+}
+
+/* ------------------------------- reset ------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+* { margin: 0; }
+
+html, body { height: 100%; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--bg-1);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  /* El fondo animado vive en un pseudo-elemento fijo (ver layout.css). */
+}
+
+img, svg, canvas { display: block; max-width: 100%; }
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button { background: none; border: 0; cursor: pointer; }
+
+button:disabled, .is-disabled { cursor: not-allowed; }
+
+ul, ol { list-style: none; padding: 0; }
+
+a { color: var(--gold); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+}
+
+/* Foco visible y consistente: accesibilidad sin romper el estilo. */
+:focus-visible {
+  outline: 2px solid var(--gold-hi);
+  outline-offset: 3px;
+  border-radius: var(--r-xs);
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Cifras siempre tabulares: los importes no "bailan" al cambiar. */
+.num, .bet__value, .hud__amount, .stat__value,
+.ptable td:last-child, .money { font-variant-numeric: tabular-nums; }
+
+::selection { background: rgba(245, 196, 81, .3); color: #fff; }
+
+/* Scrollbar discreta y acorde al tema. */
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.16) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .14);
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .26); background-clip: content-box; }
+
+/* -------------------------- utilidades breves -------------------------- */
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.text-win  { color: var(--win); }
+.text-lose { color: var(--lose); }
+.text-gold { color: var(--gold); }
+.text-dim  { color: var(--ink-3); }
+.text-mid  { color: var(--ink-2); }
+
+.row { display: flex; align-items: center; gap: var(--s-3); }
+.row--between { justify-content: space-between; }
+.row--wrap { flex-wrap: wrap; }
+.col { display: flex; flex-direction: column; gap: var(--s-3); }
+.grow { flex: 1 1 auto; min-width: 0; }
+.center { display: grid; place-items: center; }
+
+/* Texto con degradado dorado, para titulares. */
+.grad-gold {
+  background: linear-gradient(103deg, var(--gold-hi) 0%, var(--gold) 42%, #ffeeb8 68%, var(--gold-lo) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
