@@ -27,6 +27,19 @@
   /** Libro mayor acumulado en céntimos; sirve para auditar el cuadre. */
   var ledger = { debitCents: 0, creditCents: 0 };
 
+  /*
+    Tope de saldo: 10.000 millones de euros.
+
+    Toda la contabilidad usa enteros, y los enteros de JavaScript sólo son
+    exactos hasta 2^53 (unos 90 billones de euros en céntimos). Por encima de
+    ahí las sumas empiezan a redondear y el cuadre deja de ser fiable. Con
+    ventaja de la casa en las 12 máquinas ningún jugador se acerca a esta
+    cifra, pero el tope garantiza que la aritmética sea exacta pase lo que
+    pase, en lugar de degradarse en silencio.
+  */
+  var MAX_BALANCE_CENTS = 1000000000000; // 10.000.000.000,00 €
+  var warnedCap = false;
+
   function BankError(code, message, detail) {
     var e = new Error(message);
     e.name = 'BankError';
@@ -62,6 +75,17 @@
       throw BankError('NEGATIVE_BALANCE', 'Operación rechazada: dejaría el saldo en negativo.', {
         balanceCents: store.state.balanceCents, deltaCents: deltaCents, reason: reason
       });
+    }
+    if (next > MAX_BALANCE_CENTS) {
+      // Inalcanzable jugando de verdad; existe para que la aritmética entera
+      // siga siendo exacta en vez de perder precisión sin avisar.
+      if (!warnedCap) {
+        warnedCap = true;   // una sola vez: si no, inunda la consola
+        console.warn('Saldo topado en ' + U.money(U.fromCents(MAX_BALANCE_CENTS)) +
+                     ' para no perder precisión.');
+      }
+      deltaCents -= (next - MAX_BALANCE_CENTS);
+      next = MAX_BALANCE_CENTS;
     }
     store.state.balanceCents = next;
     if (deltaCents < 0) ledger.debitCents += -deltaCents;
@@ -269,6 +293,7 @@
     _resetLedger: function () { ledger.debitCents = 0; ledger.creditCents = 0; },
     _clearRounds: function () { openRounds = Object.create(null); },
     BankError: BankError,
+    MAX_BALANCE_CENTS: MAX_BALANCE_CENTS,
     on: bus.on.bind(bus),
     off: bus.off.bind(bus)
   };

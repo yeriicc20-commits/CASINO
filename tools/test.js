@@ -162,6 +162,17 @@ threw = false;
 try { C.bank.openRound('t', 0.5); } catch (e) { threw = e.code === 'INSUFFICIENT_FUNDS'; }
 ok(threw, 'con saldo 0 no se puede abrir otra ronda');
 
+/* tope de saldo: la aritmética entera debe seguir siendo exacta */
+freshBank(C.bank.MAX_BALANCE_CENTS - 1000);
+const capOpening = C.bank.balanceCents;
+const capRound = C.bank.openRound('t', 10);
+capRound.settle(1e12);      // intenta acreditar un billón de euros
+ok(C.bank.balanceCents === C.bank.MAX_BALANCE_CENTS, 'el saldo se topa en el máximo seguro');
+ok(Number.isSafeInteger(C.bank.balanceCents), 'el saldo sigue siendo un entero exacto tras el tope');
+ok(C.bank.audit(capOpening).ok, 'el cuadre sigue siendo correcto con el tope aplicado');
+ok(C.bank.MAX_BALANCE_CENTS < Number.MAX_SAFE_INTEGER,
+   'el tope está holgadamente por debajo del límite de enteros de JavaScript');
+
 /* estadísticas coherentes */
 freshBank(100000);
 const before = C.store.state.totals.rounds;

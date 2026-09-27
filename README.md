@@ -91,6 +91,11 @@ Además, toda la contabilidad va en **céntimos enteros**, así que no hay
 deriva de coma flotante, y `Bank.audit()` comprueba el cuadre exacto:
 `saldo == inicial − débitos + créditos`.
 
+El saldo está topado en 10.000 millones de euros. No es un límite de juego
+(con ventaja de la casa nadie se acerca): está para que los enteros sigan
+siendo exactos, porque por encima de 2⁵³ las sumas empezarían a redondear y
+el cuadre dejaría de ser fiable.
+
 Salir de una máquina a mitad de ronda **devuelve la apuesta**.
 
 ### Que vaya fluido
@@ -111,7 +116,8 @@ Salir de una máquina a mitad de ronda **devuelve la apuesta**.
 ## Pruebas
 
 ```bash
-node tools/test.js            # 170 comprobaciones, sin dependencias
+node tools/test.js            # 174 comprobaciones, sin dependencias
+node tools/stress.js          # 50.000 rondas agresivas contra el banco
 node tools/check-css.js       # revisa los estilos
 node tools/sim-slots.js       # RTP de las tragaperras (millones de giros)
 node tools/sim-crash.js       # RTP de Crash con distintos objetivos
@@ -122,11 +128,21 @@ npm install playwright        # sólo para la prueba de navegador
 node tools/browser-test.js    # juega de verdad en Chromium (52 comprobaciones)
 ```
 
-`tools/test.js` comprueba las matemáticas de las 12 máquinas, los invariantes
-del dinero y que **todas las máquinas se montan sin errores**. La prueba de
-navegador va más allá: juega una ronda completa en cada una, verifica que diez
-clics simultáneos producen **una sola** apuesta y que salir a mitad de ronda
-devuelve el dinero.
+**`tools/test.js`** comprueba las matemáticas de las 12 máquinas, los
+invariantes del dinero y que **todas las máquinas se montan sin errores**.
+Para eso monta cada juego contra un DOM pequeño pero real
+(`tools/lib/fake-dom.js`) en lugar de nodos falsos: con nodos falsos un
+error dentro del `create()` de Plinko se colaba sin que nadie lo viera.
+
+**`tools/stress.js`** juega decenas de miles de rondas por todas las
+máquinas —con subidas de apuesta, apuestas a todo el saldo y rachas de
+ruina— y comprueba el cuadre **después de cada ronda**, no sólo al final.
+
+**`tools/browser-test.js`** va más allá: juega una ronda completa en cada
+máquina en un Chromium de verdad, verifica que diez clics simultáneos
+producen **una sola** apuesta, que salir a mitad de ronda devuelve el
+dinero, y que ninguna pantalla se desborda en móvil, tableta ni
+escritorio.
 
 ---
 
