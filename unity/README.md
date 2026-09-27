@@ -48,14 +48,19 @@ puede testear sin abrir el editor.
 2. Abre Unity y deja que compile.
 3. `Window > General > Test Runner > EditMode > Run All`.
 
-Deben pasar los 147 tests. Si alguno falla, la copia ha ido mal: no sigas.
+Deben pasar los **67** tests. Si alguno falla, la copia ha ido mal: no sigas.
+
+(El Test Runner cuenta tests, no aserciones: son 57 `[Test]` más 10
+`[TestCase]` = 67 entradas, con 147 aserciones dentro.)
 
 Requiere el paquete **Test Framework** (viene de serie en Unity 2019+).
 
 ## Por qué hay tests "dorados"
 
 El entorno donde se escribió este port no tenía compilador de C#, así que no
-se pudo compilar ni ejecutar aquí. Para no entregar código sin comprobar, la
+se pudo compilar ni ejecutar entonces. **Ya sí**: con el SDK de .NET
+instalado, el port compila y los 67 tests pasan fuera de Unity (ver más
+abajo). Aun así los vectores dorados siguen siendo la garantía de fondo. Para no entregar código sin comprobar, la
 verificación se hizo al revés: se ejecutó el **JavaScript original** —que sí
 está verificado con millones de simulaciones— con semillas fijas, y se
 volcaron los resultados exactos a `Tests/GoldenVectors.cs`.
@@ -71,6 +76,24 @@ Además, `node tools/check-csharp.js` compara las tablas de pagos del C# con
 las del JavaScript directamente en el texto de los ficheros: 367 números
 —pesos de la tragaperras, orden de la rueda, tablas de keno, video póker,
 plinko y rasca— tienen que ser idénticos.
+
+## Probarlo sin abrir Unity
+
+El port es C# puro: no hereda de `MonoBehaviour` ni usa el motor, así que se
+compila y se prueba con el SDK de .NET, sin editor y sin licencia.
+
+```bash
+dotnet test tools/verify-csharp/Casino.Verify.csproj
+```
+
+Compila exactamente los mismos ficheros que Unity y ejecuta las mismas
+pruebas NUnit. El arnés vive fuera de `Assets/`, así que Unity ni lo ve.
+
+Único detalle: `Bank.cs` avisa con `UnityEngine.Debug.LogWarning` cuando topa
+el saldo, y ahí fuera esa clase no existe; el arnés incluye un sustituto
+mínimo (`UnityEngineShim.cs`) para no tener que tocar el port.
+
+## Regenerar los vectores
 
 Para regenerar los vectores tras cambiar las matemáticas:
 

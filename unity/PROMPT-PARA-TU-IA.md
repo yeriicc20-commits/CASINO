@@ -26,14 +26,16 @@ Quiero llevarlo a mi proyecto de Unity, que está sólo en mi ordenador.
 - `Scripts/Core/Bank.cs` — el sistema de dinero con rondas atómicas
 - `Scripts/Games/Deck.cs` — baraja, zapato y evaluadores de manos
 - `Scripts/Games/*.cs` — **las 12 máquinas**, con sus tablas y su RTP
-- `Tests/` — 147 comprobaciones contra la versión web
+- `Tests/` — 67 tests (147 aserciones) contra la versión web
 - Los tres `.asmdef` para que compile aislado
 
 Clónalo o descárgalo y **copia `unity/Assets/Casino/` dentro de mi
 `Assets/`**. No reescribas esos ficheros: ya están comprobados.
 
 **Segundo paso — ejecuta los tests antes de tocar nada.**
-`Window > General > Test Runner > EditMode > Run All`. Deben pasar los 147.
+`Window > General > Test Runner > EditMode > Run All`. Deben pasar los **67**
+tests (son 147 aserciones repartidas en 57 `[Test]` y 10 `[TestCase]`; el
+Test Runner cuenta tests, no aserciones).
 Comparan el C# contra números sacados del JavaScript original, así que si
 algo falla es que la copia ha ido mal. No sigas hasta que estén en verde.
 

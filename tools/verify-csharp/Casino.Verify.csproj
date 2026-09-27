@@ -1,0 +1,33 @@
+<!--
+  Arnés para compilar y probar el port de C# SIN abrir Unity.
+  Compila los mismos ficheros que Unity (Scripts/ y Tests/) y ejecuta las
+  pruebas NUnit con "dotnet test". Vive fuera de Assets/ a propósito:
+  Unity no lo ve y no interfiere con el proyecto.
+
+      dotnet test tools/verify-csharp/Casino.Verify.csproj
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>Casino.Verify</AssemblyName>
+    <!-- Nada implícito: sólo los ficheros del port, y ninguno de este directorio. -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="UnityEngineShim.cs" />
+    <Compile Include="../../unity/Assets/Casino/Scripts/**/*.cs" />
+    <Compile Include="../../unity/Assets/Casino/Tests/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+</Project>
