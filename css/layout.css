@@ -195,8 +195,13 @@ body::after {
   line-height: 1.2;
   color: var(--gold-hi);
   text-shadow: 0 0 18px rgba(245, 196, 81, .4);
+  /* El importe nunca debe partirse: en móvil el "€" caía a otra línea. */
+  white-space: nowrap;
 }
-@media (max-width: 480px) { .hud__amount { font-size: 18px; } }
+@media (max-width: 480px) {
+  .hud__amount { font-size: 17px; }
+  .hud__money { padding: 6px 12px; }
+}
 
 /* Destellos al subir / bajar el saldo. */
 .hud__money.is-up   { box-shadow: inset 0 0 0 1px rgba(53,210,149,.6), var(--glow-win); }

@@ -1,0 +1,379 @@
+/* =========================================================================
+   cards.css — cartas (blackjack, video póker, baccarat, hi-lo)
+   ========================================================================= */
+
+.card {
+  --cw: clamp(58px, 9vw, 80px);
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--cw);
+  aspect-ratio: 5 / 7;
+  border-radius: calc(var(--cw) * .11);
+  background: linear-gradient(158deg, #ffffff 0%, #f2f4fa 54%, #e2e6f2 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, .14),
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    0 3px 5px rgba(0, 0, 0, .34),
+    0 10px 22px rgba(0, 0, 0, .34);
+  color: #16182a;
+  -webkit-user-select: none; user-select: none;
+  /* Cada carta entra girando desde el zapato. */
+  animation: card-deal 380ms var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 60ms);
+  transform-origin: 50% 100%;
+}
+
+@keyframes card-deal {
+  from {
+    opacity: 0;
+    transform: translate(46px, -62px) rotate(16deg) scale(.86);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0) scale(1);
+  }
+}
+
+/* Las cartas se solapan ligeramente, como en una mano real. */
+.card + .card { margin-left: calc(var(--cw) * -.26); }
+
+.card--red   { color: #c8102e; }
+.card--black { color: #16182a; }
+
+.card__corner {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: center;
+  line-height: .95;
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+.card__corner--tl { top: 5%; left: 7%; }
+.card__corner--br { bottom: 5%; right: 7%; transform: rotate(180deg); }
+
+.card__rank { font-size: calc(var(--cw) * .25); letter-spacing: -.04em; }
+.card__suit { font-size: calc(var(--cw) * .2); }
+
+.card__pip {
+  position: absolute;
+  inset: 0;
+  display: grid; place-items: center;
+  font-size: calc(var(--cw) * .48);
+  opacity: .9;
+}
+
+/* --- dorso --- */
+.card--back {
+  background: linear-gradient(158deg, #2b3663 0%, #1b2246 56%, #121735 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .14),
+    inset 0 0 0 4px rgba(245, 196, 81, .2),
+    0 3px 5px rgba(0, 0, 0, .34),
+    0 10px 22px rgba(0, 0, 0, .34);
+}
+.card__pattern {
+  position: absolute;
+  inset: 8%;
+  border-radius: calc(var(--cw) * .06);
+  background-image:
+    repeating-linear-gradient(45deg, rgba(245, 196, 81, .22) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(-45deg, rgba(245, 196, 81, .22) 0 2px, transparent 2px 7px);
+  box-shadow: inset 0 0 0 1px rgba(245, 196, 81, .3);
+}
+/* Reflejo lento sobre el dorso: la mesa "vive" aunque no pase nada. */
+.card--back::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(103deg, transparent 40%, rgba(255,255,255,.14) 50%, transparent 60%);
+  animation: card-sheen 3.4s var(--ease-smooth) infinite;
+}
+@keyframes card-sheen {
+  0%, 55% { transform: translateX(-100%); }
+  100%    { transform: translateX(100%); }
+}
+
+/* --- carta volteada (video póker / hi-lo) --- */
+.card--flip { animation: card-flip 420ms var(--ease-out) backwards; }
+@keyframes card-flip {
+  from { transform: rotateY(90deg) scale(.92); opacity: .4; }
+  to   { transform: rotateY(0) scale(1); opacity: 1; }
+}
+
+/* --- carta marcada / retenida --- */
+.card.is-held {
+  transform: translateY(-14px);
+  box-shadow:
+    inset 0 0 0 2px var(--gold),
+    0 3px 5px rgba(0, 0, 0, .34),
+    0 14px 30px rgba(0, 0, 0, .4),
+    0 0 26px rgba(245, 196, 81, .45);
+}
+.card.is-win {
+  animation: card-win 700ms var(--ease-out) infinite alternate;
+}
+@keyframes card-win {
+  from { box-shadow: inset 0 0 0 2px var(--emerald-hi), 0 3px 5px rgba(0,0,0,.34), 0 10px 22px rgba(0,0,0,.34); }
+  to   { box-shadow: inset 0 0 0 3px var(--emerald-hi), 0 3px 5px rgba(0,0,0,.34), 0 14px 30px rgba(0,0,0,.4), 0 0 30px rgba(53,210,149,.6); }
+}
+.card.is-dim { filter: brightness(.6) saturate(.6); }
+
+/* ============================== BLACKJACK ============================== */
+
+.bj { display: flex; flex-direction: column; gap: var(--s-4); position: relative; }
+
+.bj__seat { display: flex; flex-direction: column; gap: var(--s-2); }
+
+.bj__seatlabel {
+  display: flex; align-items: baseline; gap: 10px;
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .54);
+}
+
+.bj__score {
+  font-family: var(--font-display);
+  font-size: 14px; font-weight: 800;
+  letter-spacing: -.01em;
+  text-transform: none;
+  color: var(--ink);
+}
+.bj__score.is-bust { color: var(--lose); }
+.bj__score.is-21 { color: var(--gold-hi); }
+
+.bj__shoe {
+  margin-left: auto;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .08em;
+  color: rgba(255, 255, 255, .34);
+  text-transform: none;
+}
+
+.bj__hand {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(clamp(58px, 9vw, 80px) * 1.4);
+  padding-left: calc(clamp(58px, 9vw, 80px) * .26);
+}
+
+/* Línea divisoria con el texto de las reglas, como en el tapete real. */
+.bj__rule {
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--s-2) 0;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .1em;
+  color: rgba(255, 255, 255, .34);
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, .03), transparent);
+}
+
+.bj__players { display: flex; gap: var(--s-4); flex-wrap: wrap; }
+
+.bj__handwrap {
+  position: relative;
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  transition: box-shadow var(--t-mid) var(--ease-out), background var(--t-mid) linear;
+}
+.bj__handwrap.is-active {
+  background: rgba(255, 255, 255, .05);
+  box-shadow: inset 0 0 0 1px rgba(245, 196, 81, .5), 0 0 22px rgba(245, 196, 81, .18);
+}
+.bj__handwrap.is-done { opacity: .9; }
+
+.bj__handtag {
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.bj__handmeta { display: flex; flex-direction: column; gap: 2px; margin-top: var(--s-2); }
+.bj__handbet { font-size: 11.5px; color: rgba(255, 255, 255, .5); font-variant-numeric: tabular-nums; }
+.bj__handres {
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.bj__handres.is-win  { color: var(--win); }
+.bj__handres.is-loss { color: var(--lose); }
+.bj__handres.is-push { color: var(--ink-2); }
+
+/* ============================= VIDEO PÓKER ============================= */
+
+.vp { display: flex; flex-direction: column; gap: var(--s-4); align-items: center; position: relative; }
+
+.vp__hand { display: flex; gap: var(--s-3); justify-content: center; flex-wrap: wrap; }
+
+.vp__slot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+.vp__card { --cw: clamp(62px, 11vw, 92px); cursor: pointer; transition: transform var(--t-mid) var(--ease-spring), box-shadow var(--t-mid) var(--ease-out); }
+.vp__card:hover:not(.is-locked) { transform: translateY(-7px); }
+
+.vp__hold {
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  font-size: 10px; font-weight: 800;
+  letter-spacing: .14em; text-transform: uppercase;
+  background: rgba(0, 0, 0, .4);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink-3);
+  opacity: 0;
+  transition: opacity var(--t-fast) linear, color var(--t-fast) linear, box-shadow var(--t-fast) linear;
+}
+.vp__hold.is-on {
+  opacity: 1;
+  color: var(--gold-hi);
+  background: rgba(245, 196, 81, .18);
+  box-shadow: inset 0 0 0 1px var(--gold), 0 0 14px rgba(245, 196, 81, .35);
+}
+
+.vp__result {
+  font-family: var(--font-display);
+  font-size: clamp(17px, 3vw, 24px);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  min-height: 1.3em;
+  text-align: center;
+}
+.vp__result.is-win { color: var(--gold-hi); text-shadow: 0 0 24px rgba(245, 196, 81, .5); }
+.vp__result.is-lose { color: var(--ink-3); }
+
+/* =============================== BACCARAT =============================== */
+
+.bac { display: flex; flex-direction: column; gap: var(--s-5); position: relative; }
+
+.bac__table { display: flex; gap: var(--s-4); justify-content: center; flex-wrap: wrap; }
+
+.bac__side {
+  flex: 1 1 240px;
+  max-width: 340px;
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+  background: rgba(0, 0, 0, .26);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1);
+  transition: box-shadow var(--t-mid) var(--ease-out), transform var(--t-mid) var(--ease-out);
+}
+.bac__side.is-winner {
+  box-shadow: inset 0 0 0 2px var(--gold), 0 0 30px rgba(245, 196, 81, .3);
+  transform: translateY(-4px);
+}
+.bac__sidehead {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: var(--s-3);
+}
+.bac__sidename {
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 800;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .62);
+}
+.bac__sidescore {
+  font-family: var(--font-display);
+  font-size: 30px; font-weight: 800;
+  line-height: 1;
+  color: var(--ink);
+}
+.bac__cards { display: flex; min-height: calc(clamp(58px, 9vw, 80px) * 1.4); padding-left: calc(clamp(58px,9vw,80px) * .26); }
+
+.bac__bets { display: flex; gap: var(--s-3); justify-content: center; flex-wrap: wrap; }
+
+.bacbet {
+  position: relative;
+  flex: 1 1 130px;
+  max-width: 200px;
+  padding: var(--s-4) var(--s-3);
+  border-radius: var(--r-md);
+  text-align: center;
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+}
+.bacbet:hover { transform: translateY(-3px); box-shadow: inset 0 0 0 1px var(--line-gold), var(--sh-2); }
+.bacbet:active { transform: translateY(1px) scale(.98); }
+.bacbet.is-picked {
+  background: linear-gradient(180deg, rgba(245,196,81,.24), rgba(245,196,81,.08));
+  box-shadow: inset 0 0 0 2px var(--gold), 0 0 24px rgba(245,196,81,.3);
+}
+.bacbet.is-won { animation: fx-pulse-gold 800ms var(--ease-out) 2; }
+.bacbet__name {
+  font-family: var(--font-display);
+  font-size: 15px; font-weight: 800;
+  letter-spacing: -.01em;
+  margin-bottom: 2px;
+}
+.bacbet__pay { font-size: 11px; color: var(--ink-3); letter-spacing: .06em; }
+.bacbet__stake {
+  margin-top: 6px;
+  font-size: 12.5px; font-weight: 700;
+  color: var(--gold-hi);
+  font-variant-numeric: tabular-nums;
+  min-height: 1.3em;
+}
+
+/* ================================ HI-LO ================================ */
+
+.hilo { display: flex; flex-direction: column; align-items: center; gap: var(--s-5); position: relative; }
+
+.hilo__stage { display: flex; align-items: center; gap: var(--s-5); flex-wrap: wrap; justify-content: center; }
+.hilo__card { --cw: clamp(84px, 16vw, 130px); }
+
+.hilo__arrow { font-size: 30px; color: var(--ink-3); animation: throb 1.6s var(--ease-smooth) infinite; }
+
+.hilo__chain {
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-3) var(--s-5);
+  border-radius: var(--r-pill);
+  background: rgba(0, 0, 0, .35);
+  box-shadow: inset 0 0 0 1px var(--line-gold);
+}
+.hilo__chainlabel { font-size: 10.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.hilo__chainval {
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 800;
+  color: var(--gold-hi);
+  font-variant-numeric: tabular-nums;
+}
+
+.hilo__odds { display: flex; gap: var(--s-3); flex-wrap: wrap; justify-content: center; }
+.hilo__odd {
+  padding: 6px 14px;
+  border-radius: var(--r-sm);
+  background: rgba(0, 0, 0, .28);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.hilo__odd strong { color: var(--gold); font-variant-numeric: tabular-nums; }
+
+/* --------------------- tabla de pagos del video póker --------------------- */
+
+.vp__pay { width: 100%; max-width: 560px; }
+.vp__ptable td, .vp__ptable th { text-align: right; }
+.vp__ptable td:first-child, .vp__ptable th:first-child { text-align: left; }
+.vp__ptable .is-col {
+  background: rgba(139, 92, 246, .16);
+  color: var(--violet-hi);
+  font-weight: 800;
+}
+.vp__ptable tr.is-hl .is-col { background: rgba(245, 196, 81, .26); color: var(--gold-hi); }
+
+.vp__credits { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.vp__creditlabel {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-3);
+  margin-right: 4px;
+}
+.btn.is-active-credit {
+  --btn-face-1: var(--violet-hi);
+  --btn-face-2: #6d3fe0;
+  --btn-edge: #3d1f8f;
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.3),
+    0 3px 0 var(--btn-edge),
+    0 0 18px rgba(139,92,246,.5);
+}

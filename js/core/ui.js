@@ -251,11 +251,31 @@
     var enabled = true;
 
     var display = el('span.bet__value');
+    /* Campo de texto (no `number`) para poder mostrar la coma decimal
+       española. `inputmode` sigue sacando el teclado numérico en el móvil. */
     var input = el('input.bet__input', {
-      type: 'number', min: min, max: hardMax, step: '0.5',
+      type: 'text', inputmode: 'decimal', autocomplete: 'off', spellcheck: 'false',
       'aria-label': 'Importe de la apuesta',
-      value: value.toFixed(2)
+      value: format(value)
     });
+
+    /** 1234.5 -> "1.234,50" (sin el símbolo, que lo pone el CSS). */
+    function format(v) {
+      var parts = v.toFixed(2).split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      return parts.join(',');
+    }
+
+    /** Acepta "12,50", "12.50" y "1.234,50". */
+    function parse(text) {
+      var t = String(text).trim().replace(/[^\d.,-]/g, '');
+      if (t.indexOf(',') !== -1) {
+        // La coma es el decimal; los puntos son separadores de millar.
+        t = t.replace(/\./g, '').replace(',', '.');
+      }
+      var n = parseFloat(t);
+      return Number.isFinite(n) ? n : NaN;
+    }
 
     function currentMax() {
       // Nunca se puede seleccionar una apuesta mayor que el saldo.
@@ -263,7 +283,7 @@
     }
 
     function set(v, silent) {
-      var next = Number(v);
+      var next = typeof v === 'string' ? parse(v) : Number(v);
       if (!Number.isFinite(next)) next = min;
       // Redondeo a céntimos: evita apuestas tipo 3.333333 €
       next = Math.round(next * 100) / 100;
@@ -271,7 +291,7 @@
       var changed = next !== value;
       value = next;
       display.textContent = U.money(value);
-      input.value = value.toFixed(2);
+      if (document.activeElement !== input) input.value = format(value);
       refreshChips();
       if (changed && !silent) onChange(value);
       return value;
@@ -334,7 +354,13 @@
     });
 
     input.addEventListener('change', function () { set(input.value); });
-    input.addEventListener('blur', function () { set(input.value); });
+    input.addEventListener('blur', function () {
+      set(input.value);
+      input.value = format(value);
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { set(input.value); input.value = format(value); input.blur(); }
+    });
 
     var node = el('.bet', {}, [
       el('.bet__head', {}, [

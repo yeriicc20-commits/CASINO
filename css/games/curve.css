@@ -1,0 +1,290 @@
+/* =========================================================================
+   curve.css — juegos con gráfica o trayectoria: Crash, Dados y Plinko
+   ========================================================================= */
+
+/* ================================= CRASH ================================= */
+
+.crash { display: flex; flex-direction: column; gap: var(--s-4); position: relative; }
+
+.crash__screen {
+  position: relative;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  min-height: 240px;
+  background:
+    linear-gradient(180deg, rgba(8, 10, 20, .9), rgba(4, 5, 11, .96));
+  box-shadow: inset 0 0 0 1px var(--line-2), inset 0 0 60px rgba(0, 0, 0, .6);
+}
+/* Rejilla de fondo, como un osciloscopio. */
+.crash__screen::before {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: .5;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .04) 1px, transparent 1px);
+  background-size: 9% 12.5%;
+}
+
+.crash__chart { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.crash__line {
+  fill: none;
+  stroke: var(--emerald-hi);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(53, 210, 149, .9));
+  transition: stroke var(--t-mid) linear;
+}
+.crash__line.is-bust   { stroke: var(--lose); filter: drop-shadow(0 0 4px rgba(255, 107, 126, .9)); }
+.crash__line.is-cashed { stroke: var(--gold); filter: drop-shadow(0 0 4px rgba(245, 196, 81, .9)); }
+
+.crash__area {
+  fill: rgba(53, 210, 149, .13);
+  stroke: none;
+  transition: fill var(--t-mid) linear;
+}
+.crash__area.is-bust { fill: rgba(255, 107, 126, .12); }
+
+.crash__dot {
+  fill: #fff;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, .95));
+}
+
+.crash__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+  text-align: center;
+}
+
+.crash__mult {
+  font-family: var(--font-display);
+  font-size: clamp(42px, 10vw, 84px);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, .9);
+  transition: color var(--t-mid) linear, transform var(--t-mid) var(--ease-spring);
+}
+.crash__mult.is-bust {
+  color: var(--lose);
+  animation: crash-bust 520ms var(--ease-out);
+}
+@keyframes crash-bust {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(1.18) rotate(-2deg); }
+  60%  { transform: scale(.94); }
+  100% { transform: scale(1); }
+}
+.crash__mult.is-cashed { color: var(--gold-hi); animation: fx-pulse-gold 700ms var(--ease-out); }
+
+.crash__status {
+  font-size: 12.5px;
+  letter-spacing: .06em;
+  color: var(--ink-3);
+}
+
+/* ================================= DADOS ================================= */
+
+.dice { display: flex; flex-direction: column; gap: var(--s-5); align-items: center; position: relative; }
+
+.dice__result {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 11vw, 88px);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  transition: color var(--t-mid) linear;
+}
+.dice__result.is-rolling { color: var(--ink-3); animation: throb 240ms linear infinite; }
+.dice__result.is-win  { color: var(--win);  animation: fx-pulse 600ms var(--ease-out); }
+.dice__result.is-lose { color: var(--lose); animation: fx-pulse-bad 600ms var(--ease-out); }
+
+.dice__trackwrap { width: min(100%, 560px); position: relative; }
+
+.dice__track {
+  position: relative;
+  height: 16px;
+  border-radius: var(--r-pill);
+  background: rgba(0, 0, 0, .5);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, .6), inset 0 0 0 1px var(--line);
+  overflow: visible;
+}
+
+.dice__fill {
+  position: absolute;
+  top: 0; bottom: 0;
+  border-radius: var(--r-pill);
+  transition: width var(--t-fast) linear, left var(--t-fast) linear, opacity var(--t-mid) linear;
+  opacity: .32;
+}
+.dice__fill--low  { left: 0; background: linear-gradient(90deg, var(--crimson), var(--crimson-hi)); }
+.dice__fill--high { background: linear-gradient(90deg, var(--emerald), var(--emerald-hi)); }
+.dice__fill.is-active { opacity: 1; box-shadow: 0 0 14px currentColor; }
+
+/* Asa del objetivo. */
+.dice__marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 34px; height: 30px;
+  padding: 0 7px;
+  display: grid; place-items: center;
+  border-radius: var(--r-sm);
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold-lo));
+  box-shadow: 0 3px 0 var(--gold-deep), 0 6px 14px rgba(0, 0, 0, .5);
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 800;
+  color: #35240a;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  transition: left var(--t-fast) linear;
+  z-index: 3;
+}
+
+/* Marca del resultado del último tiro. */
+.dice__pin {
+  position: absolute;
+  top: -8px; bottom: -8px;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: var(--r-pill);
+  background: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, .9);
+  z-index: 2;
+  animation: in-scale 300ms var(--ease-spring);
+}
+.dice__pin[hidden] { display: none; }
+
+/* El input real va encima, invisible, para poder arrastrar. */
+.dice__slider {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  width: 100%; height: 28px;
+  transform: translateY(-6px);
+  margin: 0;
+  opacity: 0;
+  cursor: grab;
+  -webkit-appearance: none; appearance: none;
+  background: transparent;
+  z-index: 4;
+}
+.dice__slider:active { cursor: grabbing; }
+.dice__slider::-webkit-slider-thumb { -webkit-appearance: none; width: 34px; height: 28px; }
+.dice__slider::-moz-range-thumb { width: 34px; height: 28px; border: 0; }
+.dice__slider:focus-visible + .dice__scale { outline: none; }
+
+.dice__scale {
+  display: flex; justify-content: space-between;
+  margin-top: var(--s-4);
+  font-family: var(--font-num);
+  font-size: 10.5px;
+  color: var(--ink-3);
+}
+
+.dice__stats { display: flex; gap: var(--s-3); flex-wrap: wrap; justify-content: center; width: 100%; }
+.dice__stat {
+  flex: 1 1 130px; max-width: 220px;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  text-align: center;
+  background: rgba(0, 0, 0, .3);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.dice__statlabel {
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 3px;
+}
+.dice__statval {
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 800;
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ================================= PLINKO ================================= */
+
+.plinko { display: flex; flex-direction: column; gap: var(--s-3); align-items: center; position: relative; }
+
+.plinko__frame {
+  width: min(100%, 520px);
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, rgba(6, 8, 16, .8), rgba(3, 4, 10, .9));
+  box-shadow: inset 0 0 0 1px var(--line-2), inset 0 0 50px rgba(0, 0, 0, .6);
+}
+
+.plinko__board { width: 100%; height: auto; display: block; }
+
+.plinko__peg {
+  fill: rgba(255, 255, 255, .34);
+  transition: fill 160ms linear;
+}
+.plinko__peg.is-hit {
+  fill: var(--gold-hi);
+  filter: drop-shadow(0 0 2px rgba(245, 196, 81, .95));
+}
+
+.plinko__ball {
+  fill: var(--gold-hi);
+  filter: drop-shadow(0 0 3px rgba(245, 196, 81, .9));
+}
+
+.plinko__buckets {
+  display: grid;
+  grid-template-columns: repeat(17, 1fr);
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.pbucket {
+  display: grid; place-items: center;
+  min-height: 26px;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+}
+.pbucket__val {
+  font-family: var(--font-display);
+  font-size: clamp(7px, 1.1vw, 10px);
+  font-weight: 800;
+  color: #16182a;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.pbucket--hot  { background: linear-gradient(180deg, #ff8a5c, #e0452a); }
+.pbucket--warm { background: linear-gradient(180deg, var(--gold-hi), var(--gold-lo)); }
+.pbucket--mid  { background: linear-gradient(180deg, #8fd8b4, #46a37a); }
+.pbucket--cold { background: linear-gradient(180deg, #5a6484, #39415c); }
+.pbucket--cold .pbucket__val { color: rgba(255, 255, 255, .75); }
+
+/* cubeta golpeada */
+.pbucket.is-hit {
+  animation: bucket-hit 780ms var(--ease-out);
+  z-index: 3;
+}
+@keyframes bucket-hit {
+  0%   { transform: translateY(0) scale(1); box-shadow: none; }
+  18%  { transform: translateY(6px) scale(1.22); box-shadow: 0 0 22px rgba(255, 255, 255, .9); }
+  100% { transform: translateY(0) scale(1); box-shadow: none; }
+}
+
+.plinko__risk { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+@media (max-width: 520px) {
+  .pbucket { min-height: 20px; }
+}

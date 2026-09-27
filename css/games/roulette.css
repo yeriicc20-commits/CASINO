@@ -1,0 +1,273 @@
+/* =========================================================================
+   roulette.css — rueda y tapete
+   ========================================================================= */
+
+.roulette { display: flex; flex-direction: column; gap: var(--s-5); position: relative; }
+
+.roulette__top { display: flex; gap: var(--s-5); align-items: center; flex-wrap: wrap; justify-content: center; }
+.roulette__side { flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: var(--s-3); }
+
+/* --------------------------------- rueda --------------------------------- */
+
+.rw__wrap { position: relative; flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: var(--s-3); }
+
+.rw {
+  --size: clamp(228px, 34vw, 320px);
+  --ball-in: calc(var(--size) * .17);
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  flex: 0 0 auto;
+}
+
+/* Aro exterior de madera/metal. */
+.rw__rim {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 210deg, #3a2a16, #6b4d27 18%, #8a6533 32%, #4a361c 55%, #7d5c2e 78%, #3a2a16);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 224, 143, .3),
+    inset 0 6px 18px rgba(0, 0, 0, .6),
+    0 14px 40px rgba(0, 0, 0, .58);
+}
+
+/* Parte que gira. */
+.rw__rotor {
+  position: absolute;
+  inset: calc(var(--size) * .075);
+  border-radius: 50%;
+  will-change: transform;
+  backface-visibility: hidden;
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, .55),
+    inset 0 0 26px rgba(0, 0, 0, .6);
+  overflow: hidden;
+}
+
+.rw__face { position: absolute; inset: 0; border-radius: 50%; }
+
+.rw__inner { position: absolute; inset: 0; }
+
+/* Cada número: un radio girado, con el texto en el borde. */
+.rw__num {
+  position: absolute;
+  left: 50%; top: 0;
+  width: 0; height: 50%;
+  transform-origin: 50% 100%;
+  /* Línea separadora entre casillas. */
+  border-left: 1px solid rgba(0, 0, 0, .45);
+}
+.rw__numtext {
+  position: absolute;
+  top: calc(var(--size) * .022);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: calc(var(--size) * .046);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .9);
+  letter-spacing: -.02em;
+}
+.rw__num.is-zero .rw__numtext { color: #d9ffe9; }
+
+/* Buje central. */
+.rw__hub {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 34%; height: 34%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 42% 34%, #c9a253, #7a5a24 52%, #3d2c11);
+  box-shadow:
+    inset 0 2px 5px rgba(255, 255, 255, .35),
+    inset 0 -4px 10px rgba(0, 0, 0, .55),
+    0 4px 14px rgba(0, 0, 0, .55);
+  font-size: calc(var(--size) * .09);
+  color: rgba(0, 0, 0, .5);
+}
+
+/* Brazo que lleva la bola: girando el brazo, la bola describe el círculo. */
+.rw__ballarm {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+  pointer-events: none;
+}
+.rw__ball {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--size) * .045);
+  width: calc(var(--size) * .058);
+  height: calc(var(--size) * .058);
+  margin-left: calc(var(--size) * -.029);
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #ffffff, #d6d9e4 46%, #8b8f9e);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .7), inset 0 -1px 2px rgba(0, 0, 0, .3);
+  will-change: transform;
+}
+
+/* Marcador fijo arriba: indica la casilla ganadora. */
+.rw__marker {
+  position: absolute;
+  left: 50%; top: calc(var(--size) * -.015);
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: calc(var(--size) * .028) solid transparent;
+  border-right: calc(var(--size) * .028) solid transparent;
+  border-top: calc(var(--size) * .05) solid var(--gold);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .7));
+  z-index: 5;
+}
+
+/* Número resultante. */
+.rw__result {
+  display: grid; place-items: center;
+  width: 58px; height: 58px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .45);
+  box-shadow: inset 0 0 0 2px var(--line-2);
+  opacity: .4;
+  transform: scale(.85);
+  transition: opacity var(--t-mid) linear, transform var(--t-slow) var(--ease-spring),
+              box-shadow var(--t-mid) var(--ease-out);
+}
+.rw__result.is-show { opacity: 1; transform: scale(1); }
+.rw__resultnum {
+  font-family: var(--font-display);
+  font-size: 24px; font-weight: 800;
+  color: #fff;
+}
+.rw__result.is-red   { background: linear-gradient(180deg, #d6203a, #8c1226); box-shadow: inset 0 0 0 2px rgba(255,255,255,.3), 0 0 22px rgba(214,32,58,.5); }
+.rw__result.is-black { background: linear-gradient(180deg, #24273a, #101220); box-shadow: inset 0 0 0 2px rgba(255,255,255,.22), 0 0 22px rgba(0,0,0,.6); }
+.rw__result.is-green { background: linear-gradient(180deg, var(--emerald-hi), var(--emerald-deep)); box-shadow: inset 0 0 0 2px rgba(255,255,255,.3), 0 0 22px rgba(53,210,149,.5); }
+
+/* ------------------------------ barra de datos ------------------------------ */
+
+.rbar { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+.rbar__item {
+  flex: 1 1 110px;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, .3);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.rbar__key {
+  display: block;
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 3px;
+}
+.rbar__val {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 800;
+  color: var(--gold-hi);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------- tapete -------------------------------- */
+
+.rtable {
+  display: grid;
+  grid-template-columns: 1.3fr repeat(12, 1fr) .9fr;
+  grid-template-rows: repeat(3, 1fr) .9fr .9fr;
+  grid-template-areas:
+    "zero . . . . . . . . . . . . ."
+    "zero . . . . . . . . . . . . ."
+    "zero . . . . . . . . . . . . .";
+  gap: 3px;
+  padding: 6px;
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, .3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+  /* Cada casilla mantiene una proporción legible en cualquier ancho. */
+  min-width: 0;
+}
+
+.rspot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 38px;
+  padding: 4px 2px;
+  border-radius: var(--r-xs);
+  background: rgba(255, 255, 255, .05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--t-fast) var(--ease-out),
+              box-shadow var(--t-fast) var(--ease-out),
+              filter var(--t-fast) linear;
+}
+@media (hover: hover) {
+  .rspot:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.28);
+    box-shadow: inset 0 0 0 1px var(--gold), 0 4px 12px rgba(0, 0, 0, .4);
+    z-index: 4;
+  }
+}
+.rspot:active { transform: translateY(1px) scale(.97); }
+
+.rspot__label {
+  font-family: var(--font-display);
+  font-size: clamp(10px, 1.4vw, 14px);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .7);
+  line-height: 1;
+}
+
+.rspot--red   { background: linear-gradient(180deg, #c0182e, #8f1122); }
+.rspot--black { background: linear-gradient(180deg, #23263a, #101220); }
+.rspot--zero {
+  background: linear-gradient(180deg, var(--emerald), var(--emerald-deep));
+  grid-column: 1; grid-row: 1 / span 3;
+}
+.rspot--outside {
+  background: rgba(255, 255, 255, .07);
+  font-size: 11px;
+}
+.rspot--outside .rspot__label { font-size: clamp(9px, 1.2vw, 12px); letter-spacing: .04em; }
+
+/* apuesta puesta */
+.rspot.has-bet { box-shadow: inset 0 0 0 2px var(--gold), 0 0 14px rgba(245, 196, 81, .32); z-index: 3; }
+.rspot.is-won {
+  animation: spot-won 700ms var(--ease-out) 3;
+  z-index: 5;
+}
+@keyframes spot-won {
+  0%, 100% { box-shadow: inset 0 0 0 2px var(--gold-hi), 0 0 12px rgba(245,196,81,.4); }
+  50%      { box-shadow: inset 0 0 0 3px #fff6d8, 0 0 30px rgba(245,196,81,.9); }
+}
+
+/* ficha apilada sobre la casilla */
+.rspot__stack {
+  position: absolute;
+  right: 2px; bottom: 2px;
+  display: flex;
+  pointer-events: none;
+}
+.rchip {
+  display: grid; place-items: center;
+  min-width: 22px; height: 22px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: radial-gradient(circle at 50% 32%, var(--gold-hi), var(--gold-lo));
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .5);
+  font-family: var(--font-display);
+  font-size: 10px; font-weight: 800;
+  color: #35240a;
+  font-variant-numeric: tabular-nums;
+  animation: in-scale 260ms var(--ease-spring) backwards;
+}
+
+@media (max-width: 620px) {
+  .rspot { min-height: 30px; }
+  .rtable { grid-template-columns: 1.1fr repeat(12, 1fr) .8fr; gap: 2px; }
+}
