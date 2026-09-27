@@ -5,15 +5,42 @@ versión web vive en la raíz del repositorio y sigue funcionando por su cuenta.
 
 ## Qué hay hecho
 
+### Núcleo
+
 | Parte | Estado |
 |---|---|
-| `Scripts/Core/Money.cs` — céntimos enteros, formato es-ES | ✅ |
-| `Scripts/Core/Rng.cs` — Mulberry32, idéntico a la web | ✅ |
-| `Scripts/Core/Bank.cs` — rondas atómicas, libro mayor, auditoría | ✅ |
-| `Scripts/Games/SlotsLogic.cs` — tragaperras 5×3, 10 líneas | ✅ |
-| `Tests/` — 52 comprobaciones contra la versión web | ✅ |
-| Las otras 11 máquinas | ⏳ pendiente |
+| `Core/Money.cs` — céntimos enteros, formato es-ES | ✅ |
+| `Core/Rng.cs` — Mulberry32, idéntico a la web | ✅ |
+| `Core/Bank.cs` — rondas atómicas, libro mayor, auditoría | ✅ |
+| `Games/Deck.cs` — baraja, zapato y evaluadores de manos | ✅ |
+
+### Las 12 máquinas (lógica y matemáticas)
+
+| Máquina | Fichero | RTP |
+|---|---|---|
+| Tragaperras | `SlotsLogic.cs` | 96,3% |
+| Ruleta europea | `RouletteLogic.cs` | 97,3% |
+| Blackjack | `BlackjackLogic.cs` | 99,4% |
+| Video póker 9/6 | `VideoPokerLogic.cs` | 99,5% |
+| Punto y banca | `BaccaratLogic.cs` | 98,9% |
+| Dados | `DiceLogic.cs` | 99,0% |
+| Minas | `MinesLogic.cs` | 98,0% |
+| Crash | `CrashLogic.cs` | 99,0% |
+| Plinko | `PlinkoLogic.cs` | 97,0% |
+| Más o menos | `HiLoLogic.cs` | 98,0% |
+| Keno | `KenoLogic.cs` | 95,0% |
+| Rasca y gana | `ScratchLogic.cs` | 95,0% |
+
+### Lo que falta
+
+| Parte | Estado |
+|---|---|
 | Interfaz (UI Toolkit / uGUI) | ⏳ pendiente |
+| Escenas y prefabs | ⏳ pendiente |
+
+La lógica no depende de Unity: son clases estáticas con funciones puras, sin
+`MonoBehaviour` ni referencias a escenas. Entra en cualquier proyecto y se
+puede testear sin abrir el editor.
 
 ## Cómo instalarlo
 
@@ -21,7 +48,7 @@ versión web vive en la raíz del repositorio y sigue funcionando por su cuenta.
 2. Abre Unity y deja que compile.
 3. `Window > General > Test Runner > EditMode > Run All`.
 
-Los 52 tests deben pasar. Si alguno falla, la copia ha ido mal: no sigas.
+Deben pasar los 147 tests. Si alguno falla, la copia ha ido mal: no sigas.
 
 Requiere el paquete **Test Framework** (viene de serie en Unity 2019+).
 
@@ -33,9 +60,17 @@ verificación se hizo al revés: se ejecutó el **JavaScript original** —que s
 está verificado con millones de simulaciones— con semillas fijas, y se
 volcaron los resultados exactos a `Tests/GoldenVectors.cs`.
 
-Los tests comparan el C# contra esos números. Si el port se desviara en algo
-—el generador aleatorio, el reparto de las tiras, la evaluación de líneas o
-la contabilidad del banco— el test falla nada más abrir el proyecto.
+Los tests comparan el C# contra esos números: la secuencia del generador,
+tiras enteras de 64 posiciones, barajas sembradas carta a carta, las 37
+casillas de la ruleta, manos concretas de blackjack y de póker, doce manos
+seguidas de baccarat, las probabilidades de keno y de plinko, la secuencia de
+estallidos de crash y cincuenta mil boletos de rasca. Si el port se desviara
+en algo, el test falla nada más abrir el proyecto.
+
+Además, `node tools/check-csharp.js` compara las tablas de pagos del C# con
+las del JavaScript directamente en el texto de los ficheros: 367 números
+—pesos de la tragaperras, orden de la rueda, tablas de keno, video póker,
+plinko y rasca— tienen que ser idénticos.
 
 Para regenerar los vectores tras cambiar las matemáticas:
 
